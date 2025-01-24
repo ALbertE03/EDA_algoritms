@@ -1,108 +1,62 @@
-from typing import Generic, TypeVar
+class Graph:
+    def __init__(self, n):
+        self.vertices = n
+        self.graph = []
+        self.MST = None
 
-T = TypeVar("T")
+    def add_edge(self, from_vertice, to, weight):
+        self.graph.append([from_vertice, to, weight])
 
+    def setOF(self, parent, i):
+        if parent[i] == i:
+            return i
 
-class DisjointSetTreeNode(Generic[T]):
+        return self.find(parent, parent[i])
 
-    def __init__(self, data: T) -> None:
-        self.data = data
-        self.parent = self
-        self.rank = 0
+    def merge(self, parent, rank, a, b):
+        a_root = self.setOF(parent, a)
+        b_root = self.setOF(parent, b)
 
+        if rank[a_root] < rank[b_root]:
+            parent[a_root] = b_root
+        elif rank[a_root] > rank[b_root]:
+            parent[b_root] = a_root
 
-class DisjointSetTree(Generic[T]):
-
-    def __init__(self) -> None:
-
-        self.map: dict[T, DisjointSetTreeNode[T]] = {}
-
-    def make_set(self, data: T) -> None:
-
-        self.map[data] = DisjointSetTreeNode(data)
-
-    def find_set(self, data: T) -> DisjointSetTreeNode[T]:
-        elem_ref = self.map[data]
-        if elem_ref != elem_ref.parent:
-            elem_ref.parent = self.find_set(elem_ref.parent.data)
-        return elem_ref.parent
-
-    def link(
-        self, node1: DisjointSetTreeNode[T], node2: DisjointSetTreeNode[T]
-    ) -> None:
-
-        if node1.rank > node2.rank:
-            node2.parent = node1
         else:
-            node1.parent = node2
-            if node1.rank == node2.rank:
-                node2.rank += 1
+            parent[b_root] = a_root
+            rank[a_root] += 1
 
-    def union(self, data1: T, data2: T) -> None:
-        self.link(self.find_set(data1), self.find_set(data2))
+    def KruskalMTS(self):
+        MST = []
+        e = 0
+        r = 0
 
+        self.graph = sorted(self.graph, key=lambda item: item[2])
 
-class Graph(Generic[T]):
-    def __init__(self) -> None:
+        parent = []
+        rank = []
 
-        self.connections: dict[T, dict[T, int]] = {}
+        for node in range(self.vertices):
+            parent.append(node)
+            rank.append(0)
 
-    def add_node(self, node: T) -> None:
+        while r < self.vertices - 1:
 
-        if node not in self.connections:
-            self.connections[node] = {}
+            f = self.graph[e][0]
+            to = self.graph[e][1]
+            weight = self.graph[e][2]
+            e += 1
+            a = self.setOF(parent, f)
+            b = self.setOF(parent, to)
+            if a != b:
+                r += 1
+                MST.append([p, to, weight])
+                self.merge(parent, rank, a, b)
 
-    def add_edge(self, node1: T, node2: T, weight: int) -> None:
+        self.MST = MST
 
-        self.add_node(node1)
-        self.add_node(node2)
-        self.connections[node1][node2] = weight
-        self.connections[node2][node1] = weight
-
-    def kruskal(self) -> Graph[T]:
-        # O|E|log |V|) con `V` vertices y `E` aristas, grafos densos es O(|V|^2log|V|)
-        edges = []
-        seen = set()
-        for start in self.connections:
-            for end in self.connections[start]:
-                if (start, end) not in seen:
-                    seen.add((end, start))
-                    edges.append((start, end, self.connections[start][end]))
-        edges.sort(key=lambda x: x[2])
-
-        disjoint_set = DisjointSetTree[T]()
-        for node in self.connections:
-            disjoint_set.make_set(node)
-
-        num_edges = 0
-        index = 0
-        graph = Graph[T]()
-        while num_edges < len(self.connections) - 1:
-            u, v, w = edges[index]
-            index += 1
-            parent_u = disjoint_set.find_set(u)
-            parent_v = disjoint_set.find_set(v)
-            if parent_u != parent_v:
-                num_edges += 1
-                graph.add_edge(u, v, w)
-                disjoint_set.union(u, v)
-        return graph
-
-
-g1 = Graph[int]()
-g1.add_edge(1, 2, 1)
-g1.add_edge(2, 3, 2)
-g1.add_edge(3, 4, 1)
-g1.add_edge(3, 5, 100)
-g1.add_edge(4, 5, 5)
-
-mst = g1.kruskal()
-
-g2 = Graph[str]()
-g2.add_edge("A", "B", 1)
-g2.add_edge("B", "C", 2)
-g2.add_edge("C", "D", 1)
-g2.add_edge("C", "E", 100)
-g2.add_edge("D", "E", 5)
-
-mst = g2.kruskal()
+    def __str__(self):
+        aux = ""
+        for a, b, peso in self.MST:
+            aux += str(a) + f"->{b}"
+        return aux

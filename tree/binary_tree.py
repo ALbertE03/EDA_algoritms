@@ -6,15 +6,114 @@ class Nodo:
         self.valor = valor
         self.izquierda = None
         self.derecha = None
+        self.altura = 1
 
 
-class ArbolBinario:
+class ArbolAVL:
     def __init__(self):
         self.raiz = None
 
+    def insertar(self, valor):
+
+        self.raiz = self._insertar(self.raiz, valor)
+
+    def _insertar(self, nodo, valor):
+
+        if not nodo:
+            return Nodo(valor)
+
+        if valor < nodo.valor:
+            nodo.izquierda = self._insertar(nodo.izquierda, valor)
+        else:
+            nodo.derecha = self._insertar(nodo.derecha, valor)
+
+        nodo.altura = 1 + max(
+            self._get_altura(nodo.izquierda), self._get_altura(nodo.derecha)
+        )
+        return self._balancear(nodo)
+
+    def _get_altura(self, nodo):
+        if not nodo:
+            return 0
+        return nodo.altura
+
+    def _get_balance(self, nodo):
+        if not nodo:
+            return 0
+        return self._get_altura(nodo.izquierda) - self._get_altura(nodo.derecha)
+
+    def _balancear(self, nodo):
+        balance = self._get_balance(nodo)
+
+        if balance > 1 and nodo.izquierda and valor < nodo.izquierda.valor:
+            return self._rotar_derecha(nodo)
+
+        if balance < -1 and nodo.derecha and valor > nodo.derecha.valor:
+            return self._rotar_izquierda(nodo)
+
+        if balance > 1 and nodo.izquierda and valor > nodo.izquierda.valor:
+            nodo.izquierda = self._rotar_izquierda(nodo.izquierda)
+            return self._rotar_derecha(nodo)
+
+        if balance < -1 and nodo.derecha and valor < nodo.derecha.valor:
+            nodo.derecha = self._rotar_derecha(nodo.derecha)
+            return self._rotar_izquierda(nodo)
+
+        return nodo
+
+    def _rotar_derecha(self, y):
+        x = y.izquierda
+        T2 = x.derecha
+
+        x.derecha = y
+        y.izquierda = T2
+
+        y.altura = 1 + max(self._get_altura(y.izquierda), self._get_altura(y.derecha))
+        x.altura = 1 + max(self._get_altura(x.izquierda), self._get_altura(x.derecha))
+
+        return x
+
+    def _rotar_izquierda(self, x):
+
+        y = x.derecha
+        T2 = y.izquierda
+
+        y.izquierda = x
+        x.derecha = T2
+
+        x.altura = 1 + max(self._get_altura(x.izquierda), self._get_altura(x.derecha))
+        y.altura = 1 + max(self._get_altura(y.izquierda), self._get_altura(y.derecha))
+
+        return y
+
+    def buscar(self, valor):
+        return self._buscar(self.raiz, valor)
+
+    def _buscar(self, nodo, valor):
+        if not nodo:
+            return False
+        if valor == nodo.valor:
+            return True
+        elif valor < nodo.valor:
+            return self._buscar(nodo.izquierda, valor)
+        else:
+            return self._buscar(nodo.derecha, valor)
+
+    def altura(self):
+
+        return self._altura(self.raiz)
+
+    def _altura(self, nodo):
+
+        if not nodo:
+            return 0
+        altura_izquierda = self._altura(nodo.izquierda)
+        altura_derecha = self._altura(nodo.derecha)
+        return max(altura_izquierda, altura_derecha) + 1
+
     def max_level_sum(self):
 
-        if self.raiz is None:
+        if not self.raiz:
             return -1, 0
 
         max_sum = float("-inf")
@@ -41,56 +140,39 @@ class ArbolBinario:
 
         return max_level, max_sum
 
-    def insertar(self, valor):
-        if not self.raiz:
-            self.raiz = Nodo(valor)
-        else:
-            self._insertar_recursivo(self.raiz, valor)
+    def __str__(self):
+        levels = []
+        queue = deque([(self.raiz, 0)])
+        while queue:
+            current_node, level = queue.popleft()
 
-    def _insertar_recursivo(self, nodo, valor):
-        if valor < nodo.valor:
-            if nodo.izquierda is None:
-                nodo.izquierda = Nodo(valor)
-            else:
-                self._insertar_recursivo(nodo.izquierda, valor)
-        else:
-            if nodo.derecha is None:
-                nodo.derecha = Nodo(valor)
-            else:
-                self._insertar_recursivo(nodo.derecha, valor)
+            if current_node is None:
+                continue
 
-    def buscar(self, valor):
-        return self._buscar_recursivo(self.raiz, valor)
+            while len(levels) <= level:
+                levels.append([])
 
-    def _buscar_recursivo(self, nodo, valor):
-        if nodo is None:
-            return False
-        if nodo.valor == valor:
-            return True  # o el nodo
-        if valor < nodo.valor:
-            return self._buscar_recursivo(nodo.izquierda, valor)
-        return self._buscar_recursivo(nodo.derecha, valor)
+            levels[level].append(current_node.valor)
 
-    def altura(self):
-        return self._altura_recursiva(self.raiz)
+            queue.append((current_node.izquierda, level + 1))
+            queue.append((current_node.derecha, level + 1))
 
-    def _altura_recursiva(self, nodo):
-        if nodo is None:
-            return 0
-        altura_izquierda = self._altura_recursiva(nodo.izquierda)
-        altura_derecha = self._altura_recursiva(nodo.derecha)
-        return max(altura_izquierda, altura_derecha) + 1
+        result_str = ""
+        for i in range(len(levels)):
+            result_str += "Nivel {}: {}\n".format(
+                i, " ".join(str(x) for x in levels[i])
+            )
+
+        return result_str.strip()
 
 
-arbol1 = ArbolBinario()
-arbol1.insertar(5)
-arbol1.insertar(3)
-arbol1.insertar(7)
-arbol1.insertar(1)
-arbol1.insertar(9)
-arbol1.insertar(2)
-arbol1.insertar(10)
-print("Altura del árbol:", arbol1.altura())
+arbol_avl = ArbolAVL()
+valores_a_insertar = [10, 20, 30, 40, 50, 25]
 
-# print(arbol1.buscar(9))
-print(arbol1.max_level_sum())
+for valor in valores_a_insertar:
+    arbol_avl.insertar(valor)
+
+print("Altura del árbol:", arbol_avl.altura())
+print("Suma máxima por nivel:", arbol_avl.max_level_sum())
+
+print(arbol_avl)

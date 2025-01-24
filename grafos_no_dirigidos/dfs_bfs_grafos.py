@@ -18,8 +18,8 @@ class grafo:
         """
         La complejidad temporal de DFS es:
 
-        Θ(V + E)  G representado en una Lista de Adyacencia.
-        Θ(|V|^2)  G representado en una Matriz de Adyacencia.
+        Θ(V + E) con G representado en una Lista de Adyacencia.
+        Θ(|V|^2) con G representado en una Matriz de Adyacencia.
 
         """
 
@@ -34,7 +34,7 @@ class grafo:
                     low[u] = min(low[u], low[v])
                     if (
                         low[v] >= d[u]
-                    ):  # si lo mas alto que se puede llegar en los descenndietes de v es a u  => u es un punto de articulación
+                    ):  # si lo mas alto que se puede llegar en los descendietes de v es a u  => u es un punto de articulación
                         print(f"{u} es un punto de articulación")
                 elif predecessors[u] != v:
                     low[u] = min(low[u], d[v])

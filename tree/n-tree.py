@@ -1,3 +1,6 @@
+from collections import deque
+
+
 class Arbol:
     def __init__(self, elemento):
         self.elemento = elemento
@@ -14,6 +17,21 @@ class Arbol:
             if result:
                 return result
         return False
+
+    def preorden(self):
+
+        print(self.elemento)
+        for hijo in self.hijos:
+            hijo.preorden()
+
+    def inorden(self):
+        for hijo in self.hijos:
+            hijo.inorden()
+        print(self.elemento)
+
+    def postorden(self):
+        for hijo in self.hijos:
+            hijo.postorden()
 
     def bfs_search(self, value):
         queue = deque([self])
@@ -80,3 +98,12 @@ arbol.hijos[0].agregar_hijo(5)
 print(arbol.profundidad())
 print(arbol.grado())
 print(arbol.max_level_sum())
+
+print("\nRecorrido Preorden:")
+arbol.preorden()
+
+print("\nRecorrido Inorden:")
+arbol.inorden()
+
+print("\nRecorrido Postorden:")
+arbol.postorden()
