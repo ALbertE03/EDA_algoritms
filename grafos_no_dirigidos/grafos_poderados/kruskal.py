@@ -11,7 +11,7 @@ class Graph:
         if parent[i] == i:
             return i
 
-        return self.find(parent, parent[i])
+        return self.setOF(parent, parent[i])
 
     def merge(self, parent, rank, a, b):
         a_root = self.setOF(parent, a)
