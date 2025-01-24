@@ -50,7 +50,7 @@ class Graph:
             b = self.setOF(parent, to)
             if a != b:
                 r += 1
-                MST.append([p, to, weight])
+                MST.append([f, to, weight])
                 self.merge(parent, rank, a, b)
 
         self.MST = MST
