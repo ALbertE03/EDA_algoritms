@@ -205,7 +205,7 @@ class ArbolAVL:
 
 
 arbol_avl = ArbolAVL()
-valores_a_insertar = [10, 20, 30, 40, 50, 25]
+valores_a_insertar = [10, 20, 30, 40, 50, 25, 23, 33, 23, 44, 100]
 
 for valor in valores_a_insertar:
     arbol_avl.insertar(valor)
