@@ -1,97 +1,110 @@
-import heapq as hq
-import math
-from collections.abc import Iterator
+from __future__ import annotations
+
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
 
 
-class Vertex:
-    """Class Vertex."""
+class DisjointSetTreeNode(Generic[T]):
 
-    def __init__(self, id_):
-
-        self.id = str(id_)
-        self.key = None
-        self.pi = None
-        self.neighbors = []
-        self.edges = {}
-
-    def __lt__(self, other):
-        return self.key < other.key
-
-    def __repr__(self):
-        return self.id
-
-    def add_neighbor(self, vertex):
-        self.neighbors.append(vertex)
-
-    def add_edge(self, vertex, weight):
-        self.edges[vertex.id] = weight
+    def __init__(self, data: T) -> None:
+        self.data = data
+        self.parent = self
+        self.rank = 0
 
 
-def connect(graph, a, b, edge):
+class DisjointSetTree(Generic[T]):
 
-    graph[a - 1].add_neighbor(graph[b - 1])
-    graph[b - 1].add_neighbor(graph[a - 1])
+    def __init__(self) -> None:
 
-    graph[a - 1].add_edge(graph[b - 1], edge)
-    graph[b - 1].add_edge(graph[a - 1], edge)
+        self.map: dict[T, DisjointSetTreeNode[T]] = {}
 
+    def make_set(self, data: T) -> None:
 
-def prim(graph: list, root: Vertex) -> list:
-    a = []
-    for u in graph:
-        u.key = math.inf
-        u.pi = None
-    root.key = 0
-    q = graph[:]
-    while q:
-        u = min(q)
-        q.remove(u)
-        for v in u.neighbors:
-            if (v in q) and (u.edges[v.id] < v.key):
-                v.pi = u
-                v.key = u.edges[v.id]
-    for i in range(1, len(graph)):
-        a.append((int(graph[i].id) + 1, int(graph[i].pi.id) + 1))
-    return a
+        self.map[data] = DisjointSetTreeNode(data)
 
+    def find_set(self, data: T) -> DisjointSetTreeNode[T]:
+        elem_ref = self.map[data]
+        if elem_ref != elem_ref.parent:
+            elem_ref.parent = self.find_set(elem_ref.parent.data)
+        return elem_ref.parent
 
-def prim_heap(graph: list, root: Vertex) -> Iterator[tuple]:
-    # O|E|log |V|) con `V` vertices y `E` aristas
-    for u in graph:
-        u.key = math.inf
-        u.pi = None
-    root.key = 0
+    def link(
+        self, node1: DisjointSetTreeNode[T], node2: DisjointSetTreeNode[T]
+    ) -> None:
 
-    h = list(graph)
-    hq.heapify(h)
+        if node1.rank > node2.rank:
+            node2.parent = node1
+        else:
+            node1.parent = node2
+            if node1.rank == node2.rank:
+                node2.rank += 1
 
-    while h:
-        u = hq.heappop(h)
-        for v in u.neighbors:
-            if (v in h) and (u.edges[v.id] < v.key):
-                v.pi = u
-                v.key = u.edges[v.id]
-                hq.heapify(h)
-
-    for i in range(1, len(graph)):
-        yield (int(graph[i].id) + 1, int(graph[i].pi.id) + 1)
+    def union(self, data1: T, data2: T) -> None:
+        self.link(self.find_set(data1), self.find_set(data2))
 
 
-x = 5
-G = [Vertex(n) for n in range(x)]
+class Graph(Generic[T]):
+    def __init__(self) -> None:
 
-connect(G, 1, 2, 15)
-connect(G, 1, 3, 12)
-connect(G, 2, 4, 13)
-connect(G, 2, 5, 5)
-connect(G, 3, 2, 6)
-connect(G, 3, 4, 6)
-connect(G, 0, 0, 0)
+        self.connections: dict[T, dict[T, int]] = {}
 
-MST = prim(G, G[0])
-MST_heap = prim_heap(G, G[0])
-for i in MST:
-    print(i)
-print()
-for i in MST_heap:
-    print(i)
+    def add_node(self, node: T) -> None:
+
+        if node not in self.connections:
+            self.connections[node] = {}
+
+    def add_edge(self, node1: T, node2: T, weight: int) -> None:
+
+        self.add_node(node1)
+        self.add_node(node2)
+        self.connections[node1][node2] = weight
+        self.connections[node2][node1] = weight
+
+    def kruskal(self) -> Graph[T]:
+        # O|E|log |V|) con `V` vertices y `E` aristas, grafos densos es O(|V|^2log|V|)
+        edges = []
+        seen = set()
+        for start in self.connections:
+            for end in self.connections[start]:
+                if (start, end) not in seen:
+                    seen.add((end, start))
+                    edges.append((start, end, self.connections[start][end]))
+        edges.sort(key=lambda x: x[2])
+
+        disjoint_set = DisjointSetTree[T]()
+        for node in self.connections:
+            disjoint_set.make_set(node)
+
+        num_edges = 0
+        index = 0
+        graph = GraphUndirectedWeighted[T]()
+        while num_edges < len(self.connections) - 1:
+            u, v, w = edges[index]
+            index += 1
+            parent_u = disjoint_set.find_set(u)
+            parent_v = disjoint_set.find_set(v)
+            if parent_u != parent_v:
+                num_edges += 1
+                graph.add_edge(u, v, w)
+                disjoint_set.union(u, v)
+        return graph
+
+
+g1 = GraphUndirectedWeighted[int]()
+g1.add_edge(1, 2, 1)
+g1.add_edge(2, 3, 2)
+g1.add_edge(3, 4, 1)
+g1.add_edge(3, 5, 100)
+g1.add_edge(4, 5, 5)
+
+mst = g1.kruskal()
+
+g2 = Graph[str]()
+g2.add_edge("A", "B", 1)
+g2.add_edge("B", "C", 2)
+g2.add_edge("C", "D", 1)
+g2.add_edge("C", "E", 100)
+g2.add_edge("D", "E", 5)
+
+mst = g2.kruskal()
