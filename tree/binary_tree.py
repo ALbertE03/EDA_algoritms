@@ -165,6 +165,44 @@ class ArbolAVL:
 
         return result_str.strip()
 
+    def inorden(self):
+        result = []
+        self._inorden(self.raiz, result)
+        return " ".join(map(str, result))
+
+    def _inorden(self, nodo, result):
+        if not nodo:
+            return
+        self._inorden(nodo.izquierda, result)
+        result.append(nodo.valor)
+        self._inorden(nodo.derecha, result)
+
+    def preorden(self):
+        result = []
+        self._preorden(self.raiz, result)
+        return " ".join(map(str, result))
+
+    def _preorden(self, nodo, result):
+        if not nodo:
+            return
+        result.append(nodo.valor)
+        self._preorden(nodo.izquierda, result)
+        self._preorden(nodo.derecha, result)
+
+    def postorden(self):
+
+        result = []
+        self._postorden(self.raiz, result)
+        return " ".join(map(str, result))
+
+    def _postorden(self, nodo, result):
+
+        if not nodo:
+            return
+        self._postorden(nodo.izquierda, result)
+        self._postorden(nodo.derecha, result)
+        result.append(nodo.valor)
+
 
 arbol_avl = ArbolAVL()
 valores_a_insertar = [10, 20, 30, 40, 50, 25]
@@ -176,3 +214,4 @@ print("Altura del árbol:", arbol_avl.altura())
 print("Suma máxima por nivel:", arbol_avl.max_level_sum())
 
 print(arbol_avl)
+print(arbol_avl.inorden())

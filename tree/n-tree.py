@@ -18,21 +18,6 @@ class Arbol:
                 return result
         return False
 
-    def preorden(self):
-
-        print(self.elemento)
-        for hijo in self.hijos:
-            hijo.preorden()
-
-    def inorden(self):
-        for hijo in self.hijos:
-            hijo.inorden()
-        print(self.elemento)
-
-    def postorden(self):
-        for hijo in self.hijos:
-            hijo.postorden()
-
     def bfs_search(self, value):
         queue = deque([self])
         while queue:
