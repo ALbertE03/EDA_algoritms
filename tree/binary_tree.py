@@ -13,6 +13,37 @@ class ArbolAVL:
     def __init__(self):
         self.raiz = None
 
+    def eliminar(self, valor):
+        self.raiz = self._eliminar(self.raiz, valor)
+
+    def _eliminar(self, nodo, valor):
+        if not nodo:
+            return nodo
+        if valor < nodo.valor:
+            nodo.izquierda = self._eliminar(nodo.izquierda, valor)
+        elif valor > nodo.valor:
+            nodo.derecha = self._eliminar(nodo.derecha, valor)
+        else:
+            if not nodo.izquierda:
+                return nodo.derecha
+            elif not nodo.derecha:
+                return nodo.izquierda
+            temp = self._min_value_node(nodo.derecha)
+            nodo.valor = temp.valor
+            nodo.derecha = self._eliminar(nodo.derecha, temp.valor)
+
+        nodo.altura = 1 + max(
+            self._get_altura(nodo.izquierda), self._get_altura(nodo.derecha)
+        )
+
+        return self._balancear(nodo)
+
+    def _min_value_node(self, nodo):
+        current = nodo
+        while current.izquierda is not None:
+            current = current.izquierda
+        return current
+
     def insertar(self, valor):
 
         self.raiz = self._insertar(self.raiz, valor)
@@ -91,9 +122,9 @@ class ArbolAVL:
 
     def _buscar(self, nodo, valor):
         if not nodo:
-            return False
+            return None
         if valor == nodo.valor:
-            return True
+            return self
         elif valor < nodo.valor:
             return self._buscar(nodo.izquierda, valor)
         else:
