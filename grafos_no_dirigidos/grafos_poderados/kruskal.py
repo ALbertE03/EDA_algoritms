@@ -89,7 +89,7 @@ class Graph(Generic[T]):
         return graph
 
 
-g1 = GraphUndirectedWeighted[int]()
+g1 = Graph[int]()
 g1.add_edge(1, 2, 1)
 g1.add_edge(2, 3, 2)
 g1.add_edge(3, 4, 1)
