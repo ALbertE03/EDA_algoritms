@@ -76,7 +76,7 @@ class Graph(Generic[T]):
 
         num_edges = 0
         index = 0
-        graph = GraphUndirectedWeighted[T]()
+        graph = Graph[T]()
         while num_edges < len(self.connections) - 1:
             u, v, w = edges[index]
             index += 1
