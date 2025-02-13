@@ -13,6 +13,8 @@ class grafo:
             self.grafo[v] = []
         self.grafo[u].append(v)
         self.grafo[v].append(u)
+        self.aristas_puentes = []
+        self.puntos_articulacion = []
 
     def dfs(self):
         """
@@ -36,10 +38,12 @@ class grafo:
                         low[v] >= d[u]
                     ):  # si lo mas alto que se puede llegar en los descendietes de v es a u  => u es un punto de articulación
                         print(f"{u} es un punto de articulación")
+                        self.puntos_articulacion.append(u)
                 elif predecessors[u] != v:
                     low[u] = min(low[u], d[v])
             if predecessors[u] is not None and low[u] == d[u]:
                 print(f"<{predecessors[u]}, {u}> es una arista puente")
+                self.aristas_puentes.append((predecessors[u], u))
             CC[u] = i
             return
 
