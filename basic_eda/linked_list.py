@@ -41,7 +41,7 @@ class Linked_List:
 
         if self.head.valor == valor:
             self.head = self.head.next
-            self.head -= 1
+            self.size -= 1
             return
 
         actual = self.head
