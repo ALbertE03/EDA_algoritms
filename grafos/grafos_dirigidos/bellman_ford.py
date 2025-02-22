@@ -1,5 +1,5 @@
 def bellman_ford(grafo, inicio):
-
+    # complejidad E*V
     distancias = {nodo: float("inf") for nodo in grafo}
     distancias[inicio] = 0
 
