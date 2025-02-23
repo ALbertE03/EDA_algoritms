@@ -5,6 +5,8 @@ class grafo:
     def __init__(self):
         self.grafo = {}
         self.time = 0
+        self.aristas_puentes = []
+        self.puntos_articulacion = []
 
     def agregar_arista(self, u, v):
         if u not in self.grafo:
@@ -13,8 +15,6 @@ class grafo:
             self.grafo[v] = []
         self.grafo[u].append(v)
         self.grafo[v].append(u)
-        self.aristas_puentes = []
-        self.puntos_articulacion = []
 
     def dfs(self):
         """
