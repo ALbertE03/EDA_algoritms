@@ -11,26 +11,26 @@ class Arbol:
 
     def dfs_search(self, value):
         if self.elemento == value:
-            return True
+            return self
         for child in self.hijos:
             result = child.dfs_search(value)
             if result:
                 return result
-        return False
+        return None
 
     def bfs_search(self, value):
+        """Búsqueda en anchura (BFS)."""
         queue = deque([self])
         while queue:
             current = queue.popleft()
             if current.elemento == value:
-                return True
+                return current
             for child in current.hijos:
                 queue.append(child)
-        return False
+        return None
 
     def max_level_sum(self):
-
-        if self is None:
+        if not self:
             return -1, 0
 
         max_sum = float("-inf")
@@ -67,28 +67,60 @@ class Arbol:
     def profundidad(self):
         if not self.hijos:
             return 1
-        return 1 + max(hijo.profundidad() for hijo in self.hijos)
+        return 1 + max((hijo.profundidad() for hijo in self.hijos), default=0)
 
     def grado(self):
         return max(
             len(self.hijos), max((hijo.grado() for hijo in self.hijos), default=0)
         )
 
+    def preorden(self):
+        print(self.elemento, end=" ")
+        for hijo in self.hijos:
+            hijo.preorden()
+
+    def inorden(self):
+        if self.hijos:
+            self.hijos[0].inorden()
+        print(self.elemento, end=" ")
+        for hijo in self.hijos[1:]:
+            hijo.inorden()
+
+    def postorden(self):
+        for hijo in self.hijos:
+            hijo.postorden()
+        print(self.elemento, end=" ")
+
+    def __str__(self):
+        return self._str_aux(0)
+
+    def _str_aux(self, nivel):
+        resultado = "  " * nivel + str(self.elemento) + "\n"
+        for hijo in self.hijos:
+            resultado += hijo._str_aux(nivel + 1)
+        return resultado
+
 
 arbol = Arbol(1)
 arbol.agregar_hijo(2)
 arbol.agregar_hijo(5)
-arbol.hijos[0].agregar_hijo(5)
+arbol.hijos[0].agregar_hijo(3)
+arbol.hijos[0].agregar_hijo(4)
+arbol.hijos[1].agregar_hijo(6)
+arbol.hijos[1].agregar_hijo(7)
 
-print(arbol.profundidad())
-print(arbol.grado())
-print(arbol.max_level_sum())
+print("Profundidad del árbol:", arbol.profundidad())
+print("Grado del árbol:", arbol.grado())
+print("Nivel con la suma máxima y su suma:", arbol.max_level_sum())
 
 print("\nRecorrido Preorden:")
 arbol.preorden()
 
-print("\nRecorrido Inorden:")
+print("\n\nRecorrido Inorden:")
 arbol.inorden()
 
-print("\nRecorrido Postorden:")
+print("\n\nRecorrido Postorden:")
 arbol.postorden()
+
+print("\n\nÁrbol:")
+print(arbol)
