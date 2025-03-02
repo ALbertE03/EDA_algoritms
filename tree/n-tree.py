@@ -19,7 +19,6 @@ class Arbol:
         return None
 
     def bfs_search(self, value):
-        """Búsqueda en anchura (BFS)."""
         queue = deque([self])
         while queue:
             current = queue.popleft()
