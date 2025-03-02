@@ -1,11 +1,10 @@
 class Heap:
-
     def __init__(self):
         self.h = []
         self.heap_size = 0
 
     def __repr__(self):
-        return str(self.h)
+        return f"Heap: {self.h}, Size: {self.heap_size}"
 
     def parent_index(self, child_idx):
         if child_idx > 0:
@@ -25,20 +24,18 @@ class Heap:
         return None
 
     def max_heapify(self, index):
-        if index < self.heap_size:
-            violation: int = index
-            left_child = self.left_child_idx(index)
-            right_child = self.right_child_idx(index)
+        left_child = self.left_child_idx(index)
+        right_child = self.right_child_idx(index)
+        largest = index
 
-            if left_child is not None and self.h[left_child] > self.h[violation]:
-                violation = left_child
-            if right_child is not None and self.h[right_child] > self.h[violation]:
-                violation = right_child
+        if left_child is not None and self.h[left_child] > self.h[largest]:
+            largest = left_child
+        if right_child is not None and self.h[right_child] > self.h[largest]:
+            largest = right_child
 
-            if violation != index:
-                self.h[violation], self.h[index] = self.h[index], self.h[violation]
-
-                self.max_heapify(violation)
+        if largest != index:
+            self.h[largest], self.h[index] = self.h[index], self.h[largest]
+            self.max_heapify(largest)
 
     def build_max_heap(self, collection):
         self.h = list(collection)
@@ -48,25 +45,26 @@ class Heap:
                 self.max_heapify(i)
 
     def extract_max(self):
-        if self.heap_size >= 2:
-            me = self.h[0]
-            self.h[0] = self.h.pop(-1)
-            self.heap_size -= 1
-            self.max_heapify(0)
-            return me
-        elif self.heap_size == 1:
-            self.heap_size -= 1
-            return self.h.pop(-1)
-        else:
+        if self.heap_size == 0:
             raise Exception("Empty heap")
+        max_value = self.h[0]
+        self.h[0] = self.h[self.heap_size - 1]
+        self.h.pop()
+        self.heap_size -= 1
+        if self.heap_size > 0:
+            self.max_heapify(0)
+        return max_value
 
     def insert(self, value):
         self.h.append(value)
-        idx = (self.heap_size - 1) // 2
         self.heap_size += 1
-        while idx >= 0:
-            self.max_heapify(idx)
-            idx = (idx - 1) // 2
+        idx = self.heap_size - 1
+        while idx > 0:
+            parent_idx = self.parent_index(idx)
+            if self.h[parent_idx] >= self.h[idx]:
+                break
+            self.h[parent_idx], self.h[idx] = self.h[idx], self.h[parent_idx]
+            idx = parent_idx
 
     def heap_sort(self):
         size = self.heap_size
@@ -77,6 +75,7 @@ class Heap:
         self.heap_size = size
 
 
+# Pruebas
 for unsorted in [
     [0],
     [2],
@@ -92,8 +91,12 @@ for unsorted in [
     [103, 9, 1, 7, 11, 15, 25, 201, 209, 107, 5],
     [-45, -2, -5],
 ]:
-    print(f"array: {unsorted}")
+    print(f"Array original: {unsorted}")
 
     heap = Heap()
     heap.build_max_heap(unsorted)
-    print(f"heap: {heap}")
+    print(f"Heap construido: {heap}")
+
+    heap.heap_sort()
+    print(f"Array ordenado: {heap.h}")
+    print("-" * 50)
