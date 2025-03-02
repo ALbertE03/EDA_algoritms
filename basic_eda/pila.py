@@ -13,35 +13,34 @@ class Pila:
         self.size = 0
 
     def add(self, valor):
-        if not self.tail:
-            self.tail = Nodo(valor)
-            self.size += 1
-            return
         new_nodo = Nodo(valor)
-        aux = self.tail
-        self.tail = new_nodo
-        self.tail.back = aux
+        if not self.tail:
+
+            self.tail = new_nodo
+        else:
+
+            new_nodo.back = self.tail
+            self.tail = new_nodo
         self.size += 1
 
     def pop(self):
         if not self.tail:
-            raise "no hay elementos"
-
+            raise IndexError("No hay elementos en la pila")
         aux = self.tail
         self.tail = self.tail.back
         self.size -= 1
         return aux
 
     def __str__(self):
-        a = "["
+        elementos = []
         actual = self.tail
         while actual:
-            a += str(actual.valor)
-            if actual.back is not None:
-                a += ","
+            elementos.append(str(actual.valor))
             actual = actual.back
-        a += "]"
-        return a
+        return "[" + ", ".join(elementos) + "]"
+
+    def size(self):
+        return self.size
 
 
 p = Pila()
@@ -49,6 +48,13 @@ p.add(2)
 p.add(312)
 p.add(-2)
 p.add(123)
-print(p)
-print(p.pop())
-print(p)
+print("Pila después de añadir elementos:", p)
+print("Tamaño de la pila:", p.size())
+
+print("Elemento eliminado:", p.pop())
+print("Pila después de eliminar un elemento:", p)
+print("Tamaño de la pila:", p.size())
+
+print("Elemento eliminado:", p.pop())
+print("Pila después de eliminar otro elemento:", p)
+print("Tamaño de la pila:", p.size())

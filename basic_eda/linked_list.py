@@ -13,31 +13,27 @@ class Linked_List:
         self.size = 0
 
     def add(self, valor):
-        if not self.head:
-            self.head = Nodo(valor)
-            self.size += 1
-            return
-
-        actual = self.head
-        while actual.next:
-            actual = actual.next
-        actual.next = Nodo(valor)
         self.size += 1
+        nuevo_nodo = Nodo(valor)
+        if not self.head:
+            self.head = nuevo_nodo
+        else:
+            actual = self.head
+            while actual.next:
+                actual = actual.next
+            actual.next = nuevo_nodo
 
     def __str__(self):
-        a = "["
+        elementos = []
         actual = self.head
         while actual:
-            a += str(actual.valor)
-            if actual.next is not None:
-                a += ","
+            elementos.append(str(actual.valor))
             actual = actual.next
-        a += "]"
-        return a
+        return "[" + ", ".join(elementos) + "]"
 
     def delete(self, valor):
         if not self.head:
-            raise "no hay elementos para eliminar"
+            raise ValueError("No hay elementos para eliminar")
 
         if self.head.valor == valor:
             self.head = self.head.next
@@ -45,28 +41,25 @@ class Linked_List:
             return
 
         actual = self.head
-        while actual is not None:
-            prev = actual
+        while actual.next:
+            if actual.next.valor == valor:
+                actual.next = actual.next.next
+                self.size -= 1
+                return
             actual = actual.next
-            if actual is not None:
-                if actual.valor == valor:
-                    prev.next = actual.next
-                    self.size -= 1
-                    break
-        else:
-            raise "no hay na'"
+
+        raise ValueError("El valor no se encuentra en la lista")
 
     def buscar(self, valor):
         actual = self.head
-        if not actual:
-            return -1
-
         while actual:
             if actual.valor == valor:
                 return actual
             actual = actual.next
+        return None
 
-        return -1
+    def size(self):
+        return self.size
 
 
 l = Linked_List()
@@ -76,13 +69,26 @@ l.add(4)
 l.add(29)
 l.add(22)
 l.add(22)
-print(l)
-print(l.size)
+print("Lista después de añadir elementos:", l)
+print("Tamaño de la lista:", l.size())
+
 l.delete(4)
-print(l)
-print(l.size)
-print(l.buscar(22))
+print("Lista después de eliminar 4:", l)
+print("Tamaño de la lista:", l.size())
+
+nodo = l.buscar(22)
+if nodo:
+    print(f"Se encontró el nodo con valor {nodo.valor}")
+else:
+    print("Nodo no encontrado")
+
 l.delete(22)
 l.delete(22)
-print(l.size)
-print(l.buscar(22))
+print("Lista después de eliminar 22 dos veces:", l)
+print("Tamaño de la lista:", l.size())
+
+nodo = l.buscar(22)
+if nodo:
+    print(f"Se encontró el nodo con valor {nodo.valor}")
+else:
+    print("Nodo no encontrado")

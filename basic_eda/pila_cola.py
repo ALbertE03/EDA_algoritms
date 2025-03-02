@@ -12,7 +12,6 @@ class Deque:
         self.size = 0
 
     def append(self, data):
-        self.size += 1
         new_node = Node(data)
         if not self.head:
             self.head = new_node
@@ -21,21 +20,24 @@ class Deque:
             new_node.back = self.tail
             self.tail.next = new_node
             self.tail = new_node
+        self.size += 1
 
     def appendleft(self, data):
-        self.size += 1
         new_node = Node(data)
         if not self.head:
+
             self.head = new_node
             self.tail = new_node
         else:
+
             new_node.next = self.head
             self.head.back = new_node
             self.head = new_node
+        self.size += 1
 
     def pop(self):
         if not self.tail:
-            raise "no hay elementos"
+            raise IndexError("No hay elementos en el deque")
         data = self.tail.data
         self.tail = self.tail.back
         if self.tail:
@@ -46,9 +48,11 @@ class Deque:
         return data
 
     def popleft(self):
+
         if not self.head:
-            raise "no hay elementos"
+            raise IndexError("No hay elementos en el deque")
         data = self.head.data
+
         self.head = self.head.next
         if self.head:
             self.head.back = None
@@ -58,15 +62,15 @@ class Deque:
         return data
 
     def __str__(self):
-        result = "["
+        elementos = []
         actual = self.head
         while actual:
-            result += str(actual.data)
+            elementos.append(str(actual.data))
             actual = actual.next
-            if actual:
-                result += ", "
-        result += "]"
-        return result
+        return "[" + ", ".join(elementos) + "]"
+
+    def size(self):
+        return self.size
 
 
 d = Deque()
@@ -75,12 +79,17 @@ d.append(2)
 d.appendleft(0)
 d.append(22)
 d.appendleft(12)
-print(d)
-print(d.size)
-print(d.popleft())
-print(d)
-print(d.size)
-print(d.pop())
-print(d.popleft())
-print(d)
-print(d.size)
+print("Deque después de añadir elementos:", d)
+print("Tamaño del deque:", d.size())
+
+print("Elemento eliminado por la izquierda:", d.popleft())
+print("Deque después de eliminar por la izquierda:", d)
+print("Tamaño del deque:", d.size())
+
+print("Elemento eliminado por la derecha:", d.pop())
+print("Deque después de eliminar por la derecha:", d)
+print("Tamaño del deque:", d.size())
+
+print("Elemento eliminado por la izquierda:", d.popleft())
+print("Deque después de eliminar por la izquierda:", d)
+print("Tamaño del deque:", d.size())
