@@ -122,3 +122,17 @@ class BinaryTree:
                 right_index = 2 * current_index + 2
                 self._delete(value, left_index)
                 self._delete(value, right_index)
+
+
+arbol = BinaryTree()
+valores = [10, 5, 15, 3, 7, 12, 20]
+for valor in valores:
+    arbol.insert(valor)
+
+print("Recorrido preorden:", arbol.preorder())
+print("Recorrido inorden:", arbol.inorder())
+print("Recorrido postorden:", arbol.postorder())
+print("Recorrido por niveles:", arbol.level_order_traversal())
+
+arbol.delete(15)
+print("Después de eliminar 15:", arbol.level_order_traversal())
