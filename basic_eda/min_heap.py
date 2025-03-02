@@ -35,9 +35,9 @@ class MinHeap:
         last_idx = len(array) - 1
         start_from = self.get_parent_idx(last_idx)
 
-        for idx, i in enumerate(array):
-            self.idx_of_element[i] = idx
-            self.heap_dict[i.name] = i.val
+        for idx, node in enumerate(array):
+            self.idx_of_element[node] = idx
+            self.heap_dict[node.name] = node.val
 
         for i in range(start_from, -1, -1):
             self.sift_down(i, array)
@@ -49,7 +49,7 @@ class MinHeap:
             right = self.get_right_child_idx(idx)
 
             smallest = idx
-            if left < len(array) and array[left] < array[idx]:
+            if left < len(array) and array[left] < array[smallest]:
                 smallest = left
             if right < len(array) and array[right] < array[smallest]:
                 smallest = right
@@ -79,9 +79,13 @@ class MinHeap:
             p = self.get_parent_idx(idx)
 
     def peek(self):
+        if self.is_empty():
+            raise Exception("Heap is empty")
         return self.heap[0]
 
     def remove(self):
+        if self.is_empty():
+            raise Exception("Heap is empty")
         self.heap[0], self.heap[-1] = self.heap[-1], self.heap[0]
         self.idx_of_element[self.heap[0]], self.idx_of_element[self.heap[-1]] = (
             self.idx_of_element[self.heap[-1]],
@@ -90,7 +94,9 @@ class MinHeap:
 
         x = self.heap.pop()
         del self.idx_of_element[x]
-        self.sift_down(0, self.heap)
+        del self.heap_dict[x.name]
+        if self.heap:
+            self.sift_down(0, self.heap)
         return x
 
     def insert(self, node):
@@ -103,9 +109,10 @@ class MinHeap:
         return len(self.heap) == 0
 
     def decrease_key(self, node, new_value):
-        assert (
-            self.heap[self.idx_of_element[node]].val > new_value
-        ), "newValue must be less that current value"
+        if node not in self.idx_of_element:
+            raise Exception("Node not found in heap")
+        if self.heap[self.idx_of_element[node]].val <= new_value:
+            raise Exception("New value must be less than current value")
         node.val = new_value
         self.heap_dict[node.name] = new_value
         self.sift_up(self.idx_of_element[node])
@@ -117,8 +124,33 @@ a = Node("A", 3)
 x = Node("X", 1)
 e = Node("E", 4)
 
-
 my_min_heap = MinHeap([r, b, a, x, e])
 
+print("Heap inicial:")
+for i in my_min_heap.heap:
+    print(i)
+
+print("\nValor mínimo (peek):", my_min_heap.peek())
+
+print("\nEliminando el mínimo...")
+removed_node = my_min_heap.remove()
+print("Nodo eliminado:", removed_node)
+
+print("\nHeap después de eliminar el mínimo:")
+for i in my_min_heap.heap:
+    print(i)
+
+print("\nInsertando un nuevo nodo (Z, 0)...")
+z = Node("Z", 0)
+my_min_heap.insert(z)
+
+print("\nHeap después de insertar Z:")
+for i in my_min_heap.heap:
+    print(i)
+
+print("\nDecrementando la clave de B a 2...")
+my_min_heap.decrease_key(b, 2)
+
+print("\nHeap después de decrementar la clave de B:")
 for i in my_min_heap.heap:
     print(i)
