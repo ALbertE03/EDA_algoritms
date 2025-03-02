@@ -185,7 +185,3 @@ bt.print_tree()
 
 print("\nRecorrido en orden:")
 bt.traverse()
-
-# Uso: El Árbol B se utiliza en bases de datos y sistemas de archivos para
-# manejar grandes volúmenes de datos. Es ideal para trabajar con discos o
-# memoria secundaria, ya que minimiza el número de accesos a disco.
