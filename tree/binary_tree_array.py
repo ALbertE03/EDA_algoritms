@@ -135,4 +135,5 @@ print("Recorrido postorden:", arbol.postorder())
 print("Recorrido por niveles:", arbol.level_order_traversal())
 
 arbol.delete(15)
+
 print("Después de eliminar 15:", arbol.level_order_traversal())
