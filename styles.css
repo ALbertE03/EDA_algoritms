@@ -1,0 +1,70 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #333;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #444;
+}
+
+.controls {
+    margin-bottom: 20px;
+}
+
+.edge-label {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    fill: #333;
+    pointer-events: none;
+    /* Evitar que las etiquetas interfieran con los clics */
+}
+
+select,
+button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+select {
+    background-color: #e0e0e0;
+}
+
+button {
+    background-color: #6200ea;
+    color: white;
+}
+
+button:hover {
+    background-color: #3700b3;
+}
+
+#graph-container {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}

@@ -22,6 +22,7 @@ def compute_lps_array(pattern):
 
 
 def kmp_search(text, pattern):
+    # complejidad O(m+n)
     n = len(text)
     m = len(pattern)
     lps = compute_lps_array(pattern)
@@ -46,5 +47,5 @@ def kmp_search(text, pattern):
 
 
 text = "ABABDABACDEABABCABAB"
-pattern = "ABABCABAB"
+pattern = "A"
 print("Coincidencias encontradas en los índices:", kmp_search(text, pattern))
