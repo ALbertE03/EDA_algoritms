@@ -30,7 +30,7 @@ const svg = d3.select("#graph-container")
     .attr("height", height);
 
 function getForces(width, height) {
-    const isSmallScreen = width < 768; // para pantallas pequeñas
+    const isSmallScreen = width < 768;
     return {
         linkDistance: isSmallScreen ? 0 : 200,
         collideRadius: isSmallScreen ? 0 : 40,
@@ -39,17 +39,14 @@ function getForces(width, height) {
     };
 }
 
-
 const forces = getForces(width, height);
-
 
 const simulation = d3.forceSimulation(graph.nodes)
     .force("link", d3.forceLink(graph.edges).id(d => d.id).distance(forces.linkDistance))
     .force("charge", d3.forceManyBody().strength(forces.charge))
     .force("collide", d3.forceCollide().radius(forces.collideRadius))
-    .force("center", forces.centerForce)
+    .force("center", forces.centerForce);
 
-// Dibujar las aristas
 const edges = svg.selectAll(".edge")
     .data(graph.edges)
     .enter()
@@ -58,27 +55,24 @@ const edges = svg.selectAll(".edge")
     .style("stroke", "#999")
     .style("stroke-width", 2);
 
-// Etiquetas de peso de las aristas (más grandes)
 const edgeLabels = svg.selectAll(".edge-label")
     .data(graph.edges)
     .enter()
     .append("text")
     .attr("class", "edge-label")
     .text(d => d.weight)
-    .style("font-size", "14px") // Tamaño de fuente más grande
+    .style("font-size", "14px")
     .style("fill", "#333");
 
-// Dibujar los nodos
 const nodes = svg.selectAll(".node")
     .data(graph.nodes)
     .enter()
     .append("circle")
     .attr("class", "node")
-    .attr("r", 15) // Radio más grande
+    .attr("r", 15)
     .style("fill", "lightblue")
     .style("stroke", "#333")
     .style("stroke-width", 2);
-
 
 const labels = svg.selectAll(".label")
     .data(graph.nodes)
@@ -86,13 +80,10 @@ const labels = svg.selectAll(".label")
     .append("text")
     .attr("class", "label")
     .text(d => d.id)
-    .style("font-size", "16px") // Tamaño de fuente más grande
+    .style("font-size", "16px")
     .style("text-anchor", "middle")
     .style("fill", "black");
 
-
-
-// Actualizar la posición de los elementos en cada tick del simulador
 simulation.on("tick", () => {
     edges.attr("x1", d => d.source.x)
         .attr("y1", d => d.source.y)
@@ -103,23 +94,17 @@ simulation.on("tick", () => {
         .attr("cy", d => d.y);
 
     labels.attr("x", d => d.x)
-        .attr("y", d => d.y + 5); // Ajustar posición de las etiquetas de los nodos
+        .attr("y", d => d.y + 5);
 
     edgeLabels.attr("x", d => (d.source.x + d.target.x) / 2)
-        .attr("y", d => (d.source.y + d.target.y) / 2 + 5); // Ajustar posición de los pesos de las aristas
-
-    distanceLabels.attr("x", d => d.x)
-        .attr("y", d => d.y - 20); // Ajustar posición de las etiquetas de distancia
+        .attr("y", d => (d.source.y + d.target.y) / 2 + 5);
 });
 
-
-// Función para pausar la ejecución
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Algoritmo de Prim paso a paso
-async function primStepByStep(startNodeId) {
+async function primStepByStep(startNodeId, speed) {
     const visited = new Set([startNodeId]);
     const mstEdges = [];
 
@@ -151,14 +136,12 @@ async function primStepByStep(startNodeId) {
             nodes.filter(d => d.id === minEdge.source.id || d.id === minEdge.target.id)
                 .style("fill", "orange");
 
-            await sleep(1000);
+            await sleep(speed);
         }
     }
 }
 
-// Algoritmo de Kruskal paso a paso
-async function kruskalStepByStep() {
-
+async function kruskalStepByStep(speed) {
     const sortedEdges = graph.edges.slice().sort((a, b) => a.weight - b.weight);
     const parent = {};
     const mstEdges = [];
@@ -188,15 +171,12 @@ async function kruskalStepByStep() {
                 .style("stroke", "red")
                 .style("stroke-width", 4);
 
-            await sleep(1000);
+            await sleep(speed);
         }
     }
 }
 
-
-// Algoritmo de Dijkstra paso a paso con actualización de etiquetas
-async function dijkstraStepByStep(startNodeId) {
-
+async function dijkstraStepByStep(startNodeId, speed) {
     const distanceLabels = svg.selectAll(".distance-label")
         .data(graph.nodes)
         .enter()
@@ -206,7 +186,8 @@ async function dijkstraStepByStep(startNodeId) {
         .style("font-size", "20px")
         .style("fill", "red")
         .attr("x", d => d.x)
-        .attr("y", d => d.y - 15)
+        .attr("y", d => d.y - 15);
+
     const distances = {};
     const previous = {};
     const queue = new Set(graph.nodes.map(node => node.id));
@@ -217,10 +198,10 @@ async function dijkstraStepByStep(startNodeId) {
     });
     distances[startNodeId] = 0;
 
-    // Actualizar la etiqueta del nodo de inicio
     distanceLabels.filter(d => d.id === startNodeId)
         .text("0");
-    await sleep(1000);
+    await sleep(speed);
+
     while (queue.size > 0) {
         let minNode = null;
         for (const node of queue) {
@@ -241,7 +222,6 @@ async function dijkstraStepByStep(startNodeId) {
                 distances[neighbor] = alt;
                 previous[neighbor] = minNode;
 
-                // Actualizar la etiqueta del nodo vecino
                 distanceLabels.filter(d => d.id === neighbor)
                     .text(alt);
 
@@ -249,13 +229,13 @@ async function dijkstraStepByStep(startNodeId) {
                     .style("stroke", "blue")
                     .style("stroke-width", 4);
 
-                await sleep(1000);
+                await sleep(speed);
             }
         }
     }
 }
-// Algoritmo de BFS paso a paso
-async function bfsStepByStep(startNodeId) {
+
+async function bfsStepByStep(startNodeId, speed) {
     const queue = [startNodeId];
     const visited = new Set([startNodeId]);
 
@@ -276,14 +256,13 @@ async function bfsStepByStep(startNodeId) {
                     .style("stroke", "purple")
                     .style("stroke-width", 4);
 
-                await sleep(1000);
+                await sleep(speed);
             }
         }
     }
 }
 
-// Algoritmo de DFS paso a paso
-async function dfsStepByStep(startNodeId) {
+async function dfsStepByStep(startNodeId, speed) {
     const stack = [startNodeId];
     const visited = new Set([startNodeId]);
 
@@ -304,13 +283,12 @@ async function dfsStepByStep(startNodeId) {
                     .style("stroke", "cyan")
                     .style("stroke-width", 4);
 
-                await sleep(1000);
+                await sleep(speed);
             }
         }
     }
 }
 
-// Función para reiniciar el gráfico
 function resetGraph() {
     edges.style("stroke", "#999")
         .style("stroke-width", 2);
@@ -318,32 +296,59 @@ function resetGraph() {
     svg.selectAll(".distance-label").remove();
 }
 
-// Iniciar el algoritmo seleccionado
 document.getElementById("start-button").addEventListener("click", () => {
     const algorithm = document.getElementById("algorithm-select").value;
+    const startNodeId = document.getElementById("start-node-select").value;
+    const speed = parseInt(document.getElementById("speed-slider").value);
     resetGraph();
     if (algorithm === "prim") {
-        primStepByStep('A');
+        primStepByStep(startNodeId, speed);
     } else if (algorithm === "kruskal") {
-        kruskalStepByStep();
+        kruskalStepByStep(speed);
     } else if (algorithm === "dijkstra") {
-        dijkstraStepByStep('A');
+        dijkstraStepByStep(startNodeId, speed);
     } else if (algorithm === "bfs") {
-        bfsStepByStep('A');
+        bfsStepByStep(startNodeId, speed);
     } else if (algorithm === "dfs") {
-        dfsStepByStep('A');
+        dfsStepByStep(startNodeId, speed);
     }
 });
 
-// Reiniciar el gráfico
 document.getElementById("reset-button").addEventListener("click", resetGraph);
 
-// Hacer el gráfico responsive
 window.addEventListener("resize", () => {
-    const newWidth = window.innerWidth * 0.9;
-    const newHeight = window.innerHeight * 0.7;
+    const newWidth = window.innerWidth;
+    const newHeight = window.innerHeight;
     svg.attr("width", newWidth)
         .attr("height", newHeight);
     simulation.force("center", d3.forceCenter(newWidth / 2, newHeight / 2))
         .alpha(0.3).restart();
+});
+
+// Populate start node select
+const startNodeSelect = document.getElementById("start-node-select");
+graph.nodes.forEach(node => {
+    const option = document.createElement("option");
+    option.value = node.id;
+    option.text = node.id;
+    startNodeSelect.appendChild(option);
+});
+
+// Update algorithm info
+const algorithmInfo = document.getElementById("algorithm-info");
+document.getElementById("algorithm-select").addEventListener("change", () => {
+    const algorithm = document.getElementById("algorithm-select").value;
+    let info = "";
+    if (algorithm === "prim") {
+        info = "Prim's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
+    } else if (algorithm === "kruskal") {
+        info = "Kruskal's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
+    } else if (algorithm === "dijkstra") {
+        info = "Dijkstra's Algorithm: Finds the shortest path from a start node to all other nodes in a weighted graph.";
+    } else if (algorithm === "bfs") {
+        info = "Breadth-First Search (BFS): Explores all nodes level by level from a start node.";
+    } else if (algorithm === "dfs") {
+        info = "Depth-First Search (DFS): Explores as far as possible along each branch before backtracking.";
+    }
+    algorithmInfo.textContent = info;
 });
