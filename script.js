@@ -325,7 +325,6 @@ window.addEventListener("resize", () => {
         .alpha(0.3).restart();
 });
 
-// Populate start node select
 const startNodeSelect = document.getElementById("start-node-select");
 graph.nodes.forEach(node => {
     const option = document.createElement("option");
@@ -334,7 +333,7 @@ graph.nodes.forEach(node => {
     startNodeSelect.appendChild(option);
 });
 
-// Update algorithm info
+
 const algorithmInfo = document.getElementById("algorithm-info");
 document.getElementById("algorithm-select").addEventListener("change", () => {
     const algorithm = document.getElementById("algorithm-select").value;
