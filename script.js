@@ -38,9 +38,9 @@ const svg = d3.select("#graph-container")
 function getForces(width, height) {
     const isSmallScreen = width < 768;
     return {
-        linkDistance: isSmallScreen ? 0 : 100,
-        collideRadius: isSmallScreen ? 0 : 60,
-        charge: isSmallScreen ? -500 : 100,
+        linkDistance: isSmallScreen ? 60 : 200,
+        collideRadius: isSmallScreen ? 60 : 100,
+        charge: isSmallScreen ? 200 : 500,
         centerForce: d3.forceCenter(width / 2, height / 2),
     };
 }
@@ -67,7 +67,7 @@ const edgeLabels = svg.selectAll(".edge-label")
     .append("text")
     .attr("class", "edge-label")
     .text(d => d.weight)
-    .style("font-size", "14px")
+    .style("font-size", "20px")
     .style("fill", "#333");
 
 const nodes = svg.selectAll(".node")
@@ -114,6 +114,9 @@ function sleep(ms) {
 let isRunning = false;
 
 async function primStepByStep(startNodeId, speed) {
+    edgeLabels.style("display", "block");
+    bridges = []; // Limpiar aristas puente
+    articulationPoints = new Set(); // Limpiar puntos de articulación
     isRunning = true;
     const visited = new Set([startNodeId]);
     const mstEdges = [];
@@ -153,6 +156,9 @@ async function primStepByStep(startNodeId, speed) {
 }
 
 async function kruskalStepByStep(speed) {
+    edgeLabels.style("display", "block");
+    bridges = []; // Limpiar aristas puente
+    articulationPoints = new Set(); // Limpiar puntos de articulación
     isRunning = true;
     const sortedEdges = graph.edges.slice().sort((a, b) => a.weight - b.weight);
     const parent = {};
@@ -191,6 +197,9 @@ async function kruskalStepByStep(speed) {
 }
 
 async function dijkstraStepByStep(startNodeId, speed) {
+    bridges = []; // Limpiar aristas puente
+    articulationPoints = new Set(); // Limpiar puntos de articulación
+    edgeLabels.style("display", "block");
     isRunning = true;
     const distanceLabels = svg.selectAll(".distance-label")
         .data(graph.nodes)
@@ -252,16 +261,38 @@ async function dijkstraStepByStep(startNodeId, speed) {
 }
 
 async function bfsStepByStep(startNodeId, speed) {
+    edgeLabels.style("display", "none"); // Ocultar etiquetas de peso
     isRunning = true;
     const queue = [startNodeId];
     const visited = new Set([startNodeId]);
+    const distances = {}; // Almacenar distancias
+
+    // Inicializar distancias
+    graph.nodes.forEach(node => {
+        distances[node.id] = Infinity; // Distancia infinita por defecto
+    });
+    distances[startNodeId] = 0; // Distancia 0 para el nodo inicial
+
+    // Mostrar etiquetas de distancia
+    const distanceLabels = svg.selectAll(".distance-label")
+        .data(graph.nodes)
+        .enter()
+        .append("text")
+        .attr("class", "distance-label")
+        .text(d => distances[d.id] === Infinity ? "∞" : distances[d.id])
+        .style("font-size", "20px")
+        .style("fill", "red")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 15);
 
     while (queue.length > 0 && isRunning) {
         const current = queue.shift();
 
+        // Resaltar el nodo actual
         nodes.filter(d => d.id === current)
             .style("fill", "green");
 
+        // Explorar vecinos
         const neighbors = graph.edges.filter(edge => edge.source.id === current || edge.target.id === current);
         for (const edge of neighbors) {
             const neighbor = edge.source.id === current ? edge.target.id : edge.source.id;
@@ -269,6 +300,14 @@ async function bfsStepByStep(startNodeId, speed) {
                 visited.add(neighbor);
                 queue.push(neighbor);
 
+                // Actualizar la distancia del vecino
+                distances[neighbor] = distances[current] + 1;
+
+                // Actualizar la etiqueta de distancia
+                distanceLabels.filter(d => d.id === neighbor)
+                    .text(distances[neighbor]);
+
+                // Resaltar la arista explorada
                 edges.filter(d => d === edge)
                     .style("stroke", "purple")
                     .style("stroke-width", 4);
@@ -284,6 +323,8 @@ let bridges = [];
 let articulationPoints = new Set();
 
 async function dfsStepByStep(startNodeId, speed) {
+
+    edgeLabels.style("display", "none");
     isRunning = true;
     const stack = [startNodeId];
     const visited = new Set([startNodeId]);
@@ -416,6 +457,7 @@ window.addEventListener("resize", () => {
 });
 
 const startNodeSelect = document.getElementById("start-node-select");
+
 graph.nodes.forEach(node => {
     const option = document.createElement("option");
     option.value = node.id;
