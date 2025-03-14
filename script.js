@@ -38,9 +38,9 @@ const svg = d3.select("#graph-container")
 function getForces(width, height) {
     const isSmallScreen = width < 768;
     return {
-        linkDistance: isSmallScreen ? 60 : 200,
-        collideRadius: isSmallScreen ? 60 : 100,
-        charge: isSmallScreen ? 200 : 500,
+        linkDistance: isSmallScreen ? 20 : 200,
+        collideRadius: isSmallScreen ? 40 : 100,
+        charge: isSmallScreen ? 20 : 500,
         centerForce: d3.forceCenter(width / 2, height / 2),
     };
 }
