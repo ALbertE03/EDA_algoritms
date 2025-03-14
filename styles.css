@@ -1,13 +1,20 @@
+/* Importar la fuente Poppins desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f4f8;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    color: #333;
+    color: #2c3e50;
+    background: rgb(2, 0, 36);
+    background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 26%, rgba(0, 212, 255, 1) 50%);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    overflow: hidden;
 }
 
 .edge.bridge {
@@ -16,8 +23,6 @@ body {
     stroke-dasharray: 5, 5 !important;
 }
 
-
-
 .node.articulation-point {
     fill: #ff4500 !important;
     stroke: #8b0000 !important;
@@ -25,10 +30,12 @@ body {
 }
 
 .container {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     width: 90%;
     max-width: 1200px;
     text-align: center;
@@ -40,61 +47,80 @@ body {
 h1 {
     margin-bottom: 20px;
     font-size: 2.5rem;
-    color: #2c3e50;
-    font-weight: 600;
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .controls {
     margin-bottom: 20px;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 15px;
     flex-wrap: wrap;
 }
 
 select,
 button {
-    padding: 12px 20px;
+    padding: 12px 24px;
     font-size: 1rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-select {
-    background-color: #e0e7ff;
-    color: #4c51bf;
+select:hover,
+button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+select:focus,
+button:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
 button {
-    background-color: #4c51bf;
-    color: white;
+    background: linear-gradient(135deg, #6e8efb, #4a6cf7);
+    border: none;
 }
 
 button:hover {
-    background-color: #434190;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #4a6cf7, #6e8efb);
 }
 
 #graph-container {
     width: 100%;
     height: 70vh;
-    border: 1px solid #e0e7ff;
     border-radius: 15px;
     overflow: hidden;
-    background-color: #f8fafc;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .node {
-    fill: #4c51bf;
-    stroke: #3730a3;
+    fill: #6e8efb;
+    stroke: #4a6cf7;
     stroke-width: 2;
     transition: all 0.3s ease;
+}
+
+.node:hover {
+    fill: #4a6cf7;
+    stroke: #6e8efb;
 }
 
 .edge {
@@ -109,25 +135,25 @@ button:hover {
 }
 
 .label {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 14px;
-    fill: #2c3e50;
+    fill: #ffffff;
     font-weight: 600;
     pointer-events: none;
 }
 
 .edge-label {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 12px;
-    fill: #4c51bf;
+    fill: #ffffff;
     font-weight: 500;
     pointer-events: none;
 }
 
 .distance-label {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins', sans-serif;
     font-size: 20px;
-    fill: red;
+    fill: #ff6b6b;
     font-weight: 600;
     pointer-events: none;
 }
@@ -135,14 +161,81 @@ button:hover {
 #algorithm-info {
     margin-top: 20px;
     font-size: 1.1rem;
-    color: #4a5568;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.3);
     max-width: 600px;
     text-align: center;
+    line-height: 1.6;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+#algorithm-info strong {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+#algorithm-info br {
+    display: block;
+    content: "";
+    margin: 10px 0;
+}
+
+label[for="speed-slider"] {
+    color: white;
+    font-weight: 500;
+    font-size: 1rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+
 }
 
 #speed-slider {
     width: 150px;
     margin: 0 10px;
+    color: #ffffff;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    height: 8px;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+#speed-slider:hover {
+    opacity: 1;
+}
+
+#speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    color: #ffffff;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#speed-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#speed-slider::-webkit-slider-thumb:hover {
+    background: #e0e7ff;
+}
+
+#speed-slider::-moz-range-thumb:hover {
+    background: #e0e7ff;
 }
 
 @media (max-width: 768px) {
@@ -153,7 +246,7 @@ button:hover {
     select,
     button {
         font-size: 0.9rem;
-        padding: 10px 15px;
+        padding: 10px 20px;
     }
 
     #graph-container {
@@ -177,11 +270,11 @@ button:hover {
     }
 
     .container {
-        padding: 15px;
+        padding: 20px;
     }
 
     .controls {
-        gap: 8px;
+        gap: 10px;
     }
 
     select,

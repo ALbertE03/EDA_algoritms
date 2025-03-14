@@ -58,7 +58,7 @@ const edges = svg.selectAll(".edge")
     .enter()
     .append("line")
     .attr("class", "edge")
-    .style("stroke", "#999")
+    .style("stroke", "black")
     .style("stroke-width", 2);
 
 const edgeLabels = svg.selectAll(".edge-label")
@@ -68,7 +68,7 @@ const edgeLabels = svg.selectAll(".edge-label")
     .attr("class", "edge-label")
     .text(d => d.weight)
     .style("font-size", "20px")
-    .style("fill", "#333");
+    .style("fill", "withe");
 
 const nodes = svg.selectAll(".node")
     .data(graph.nodes)
@@ -77,7 +77,7 @@ const nodes = svg.selectAll(".node")
     .attr("class", "node")
     .attr("r", 15)
     .style("fill", "lightblue")
-    .style("stroke", "#333")
+    .style("stroke", "black")
     .style("stroke-width", 2);
 
 const labels = svg.selectAll(".label")
@@ -157,8 +157,8 @@ async function primStepByStep(startNodeId, speed) {
 
 async function kruskalStepByStep(speed) {
     edgeLabels.style("display", "block");
-    bridges = []; // Limpiar aristas puente
-    articulationPoints = new Set(); // Limpiar puntos de articulación
+    bridges = [];
+    articulationPoints = new Set();
     isRunning = true;
     const sortedEdges = graph.edges.slice().sort((a, b) => a.weight - b.weight);
     const parent = {};
@@ -197,8 +197,8 @@ async function kruskalStepByStep(speed) {
 }
 
 async function dijkstraStepByStep(startNodeId, speed) {
-    bridges = []; // Limpiar aristas puente
-    articulationPoints = new Set(); // Limpiar puntos de articulación
+    bridges = [];
+    articulationPoints = new Set();
     edgeLabels.style("display", "block");
     isRunning = true;
     const distanceLabels = svg.selectAll(".distance-label")
@@ -208,7 +208,7 @@ async function dijkstraStepByStep(startNodeId, speed) {
         .attr("class", "distance-label")
         .text(d => "∞")
         .style("font-size", "20px")
-        .style("fill", "red")
+        .style("fill", "orange")
         .attr("x", d => d.x)
         .attr("y", d => d.y - 15);
 
@@ -250,7 +250,7 @@ async function dijkstraStepByStep(startNodeId, speed) {
                     .text(alt);
 
                 edges.filter(d => d === edge)
-                    .style("stroke", "blue")
+                    .style("stroke", "red")
                     .style("stroke-width", 4);
 
                 await sleep(speed);
@@ -261,19 +261,19 @@ async function dijkstraStepByStep(startNodeId, speed) {
 }
 
 async function bfsStepByStep(startNodeId, speed) {
-    edgeLabels.style("display", "none"); // Ocultar etiquetas de peso
+    edgeLabels.style("display", "none");
     isRunning = true;
     const queue = [startNodeId];
     const visited = new Set([startNodeId]);
-    const distances = {}; // Almacenar distancias
+    const distances = {};
 
-    // Inicializar distancias
+
     graph.nodes.forEach(node => {
-        distances[node.id] = Infinity; // Distancia infinita por defecto
+        distances[node.id] = Infinity;
     });
-    distances[startNodeId] = 0; // Distancia 0 para el nodo inicial
+    distances[startNodeId] = 0;
 
-    // Mostrar etiquetas de distancia
+
     const distanceLabels = svg.selectAll(".distance-label")
         .data(graph.nodes)
         .enter()
@@ -288,11 +288,11 @@ async function bfsStepByStep(startNodeId, speed) {
     while (queue.length > 0 && isRunning) {
         const current = queue.shift();
 
-        // Resaltar el nodo actual
+
         nodes.filter(d => d.id === current)
             .style("fill", "green");
 
-        // Explorar vecinos
+
         const neighbors = graph.edges.filter(edge => edge.source.id === current || edge.target.id === current);
         for (const edge of neighbors) {
             const neighbor = edge.source.id === current ? edge.target.id : edge.source.id;
@@ -300,16 +300,14 @@ async function bfsStepByStep(startNodeId, speed) {
                 visited.add(neighbor);
                 queue.push(neighbor);
 
-                // Actualizar la distancia del vecino
+
                 distances[neighbor] = distances[current] + 1;
 
-                // Actualizar la etiqueta de distancia
                 distanceLabels.filter(d => d.id === neighbor)
                     .text(distances[neighbor]);
 
-                // Resaltar la arista explorada
                 edges.filter(d => d === edge)
-                    .style("stroke", "purple")
+                    .style("stroke", "red")
                     .style("stroke-width", 4);
 
                 await sleep(speed);
@@ -326,8 +324,6 @@ async function dfsStepByStep(startNodeId, speed) {
 
     edgeLabels.style("display", "none");
     isRunning = true;
-    const stack = [startNodeId];
-    const visited = new Set([startNodeId]);
     const disc = {};
     const low = {};
     const parent = {};
@@ -405,9 +401,15 @@ async function dfsStepByStep(startNodeId, speed) {
         .attr("class", "node articulation-point");
 
 
-    const bridgeInfo = bridges.length > 0 ? `Aristas puente: ${bridges.map(e => `${e.source.id}-${e.target.id}`).join(", ")}` : "No hay aristas puente.";
-    const articulationInfo = articulationPoints.size > 0 ? `Puntos de articulación: ${Array.from(articulationPoints).join(", ")}` : "No hay puntos de articulación.";
-    algorithmInfo.textContent = `${bridgeInfo}. ${articulationInfo}.`;
+    const bridgeInfo = bridges.length > 0
+        ? `🔗 <strong>Aristas puente:</strong> ${bridges.map(e => `${e.source.id}-${e.target.id}`).join(", ")}`
+        : "🔗 No hay aristas puente.";
+
+    const articulationInfo = articulationPoints.size > 0
+        ? `📍 <strong>Puntos de articulación:</strong> ${Array.from(articulationPoints).join(", ")}`
+        : "📍 No hay puntos de articulación.";
+
+    algorithmInfo.innerHTML = `${bridgeInfo}<br>${articulationInfo}`;
 
     isRunning = false;
 }
