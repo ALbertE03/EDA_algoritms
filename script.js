@@ -468,20 +468,21 @@ graph.nodes.forEach(node => {
 });
 
 const algorithmInfo = document.getElementById("algorithm-info");
-algorithmInfo.textContent = "Prim's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
+algorithmInfo.textContent = "Algoritmo de Prim: Encuentra el árbol de expansión mínima para un grafo no dirigido ponderado.";
+
 document.getElementById("algorithm-select").addEventListener("change", () => {
     const algorithm = document.getElementById("algorithm-select").value;
     let info = "";
     if (algorithm === "prim") {
-        info = "Prim's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
+        info = "Algoritmo de Prim: Encuentra el árbol de expansión mínima para un grafo no dirigido ponderado.";
     } else if (algorithm === "kruskal") {
-        info = "Kruskal's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
+        info = "Algoritmo de Kruskal: Encuentra el árbol de expansión mínima para un grafo no dirigido ponderado.";
     } else if (algorithm === "dijkstra") {
-        info = "Dijkstra's Algorithm: Finds the shortest path from a start node to all other nodes in a weighted graph.";
+        info = "Algoritmo de Dijkstra: Encuentra el camino más corto desde un nodo inicial a todos los demás nodos en un grafo ponderado.";
     } else if (algorithm === "bfs") {
-        info = "Breadth-First Search (BFS): Explores all nodes level by level from a start node.";
+        info = "Búsqueda en Anchura (BFS): Explora todos los nodos nivel por nivel desde un nodo inicial.";
     } else if (algorithm === "dfs") {
-        info = "Depth-First Search (DFS): Explores as far as possible along each branch before backtracking.";
+        info = "Búsqueda en Profundidad (DFS): Explora lo más lejos posible a lo largo de cada rama antes de retroceder.";
     }
     algorithmInfo.textContent = info;
 });
