@@ -10,6 +10,20 @@ body {
     color: #333;
 }
 
+.edge.bridge {
+    stroke: #ff0000 !important;
+    stroke-width: 4 !important;
+    stroke-dasharray: 5, 5 !important;
+}
+
+
+
+.node.articulation-point {
+    fill: #ff4500 !important;
+    stroke: #8b0000 !important;
+    stroke-width: 3 !important;
+}
+
 .container {
     background-color: #ffffff;
     padding: 20px;

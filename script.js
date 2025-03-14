@@ -1,26 +1,32 @@
 const graph = {
     nodes: [
         { id: 'A' }, { id: 'B' }, { id: 'C' }, { id: 'D' },
-        { id: 'E' }, { id: 'F' }, { id: 'G' }, { id: 'H' }, { id: 'I' }
+        { id: 'E' }, { id: 'F' }, { id: 'G' }, { id: 'H' }, { id: 'I' },
+        { id: 'J' }, { id: 'K' }, { id: 'L' }, { id: 'M' }, { id: 'N' }
     ],
     edges: [
         { source: 'A', target: 'B', weight: 4 },
-        { source: 'A', target: 'H', weight: 8 },
+        { source: 'A', target: 'C', weight: 8 },
         { source: 'B', target: 'C', weight: 8 },
-        { source: 'B', target: 'H', weight: 11 },
+        { source: 'B', target: 'D', weight: 11 },
         { source: 'C', target: 'D', weight: 7 },
-        { source: 'C', target: 'F', weight: 4 },
-        { source: 'C', target: 'I', weight: 2 },
+        { source: 'C', target: 'E', weight: 4 },
         { source: 'D', target: 'E', weight: 9 },
         { source: 'D', target: 'F', weight: 14 },
         { source: 'E', target: 'F', weight: 10 },
         { source: 'F', target: 'G', weight: 2 },
         { source: 'G', target: 'H', weight: 1 },
         { source: 'G', target: 'I', weight: 6 },
-        { source: 'H', target: 'I', weight: 7 }
+        { source: 'H', target: 'I', weight: 7 },
+        { source: 'J', target: 'K', weight: 3 },
+        { source: 'J', target: 'L', weight: 5 },
+        { source: 'K', target: 'L', weight: 7 },
+        { source: 'K', target: 'M', weight: 2 },
+        { source: 'L', target: 'M', weight: 4 },
+        { source: 'M', target: 'N', weight: 6 },
+        { source: 'I', target: 'J', weight: 9 }
     ]
 };
-
 const width = document.getElementById("graph-container").clientWidth;
 const height = document.getElementById("graph-container").clientHeight;
 
@@ -32,9 +38,9 @@ const svg = d3.select("#graph-container")
 function getForces(width, height) {
     const isSmallScreen = width < 768;
     return {
-        linkDistance: isSmallScreen ? 0 : 200,
-        collideRadius: isSmallScreen ? 0 : 40,
-        charge: isSmallScreen ? -500 : -1000,
+        linkDistance: isSmallScreen ? 0 : 100,
+        collideRadius: isSmallScreen ? 0 : 60,
+        charge: isSmallScreen ? -500 : 100,
         centerForce: d3.forceCenter(width / 2, height / 2),
     };
 }
@@ -104,11 +110,15 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
+let isRunning = false;
+
 async function primStepByStep(startNodeId, speed) {
+    isRunning = true;
     const visited = new Set([startNodeId]);
     const mstEdges = [];
 
-    while (visited.size < graph.nodes.length) {
+    while (visited.size < graph.nodes.length && isRunning) {
         let minEdge = null;
         let minWeight = Infinity;
 
@@ -139,9 +149,11 @@ async function primStepByStep(startNodeId, speed) {
             await sleep(speed);
         }
     }
+    isRunning = false;
 }
 
 async function kruskalStepByStep(speed) {
+    isRunning = true;
     const sortedEdges = graph.edges.slice().sort((a, b) => a.weight - b.weight);
     const parent = {};
     const mstEdges = [];
@@ -164,6 +176,7 @@ async function kruskalStepByStep(speed) {
     }
 
     for (const edge of sortedEdges) {
+        if (!isRunning) break;
         if (union(edge.source.id, edge.target.id)) {
             mstEdges.push(edge);
 
@@ -174,9 +187,11 @@ async function kruskalStepByStep(speed) {
             await sleep(speed);
         }
     }
+    isRunning = false;
 }
 
 async function dijkstraStepByStep(startNodeId, speed) {
+    isRunning = true;
     const distanceLabels = svg.selectAll(".distance-label")
         .data(graph.nodes)
         .enter()
@@ -202,7 +217,7 @@ async function dijkstraStepByStep(startNodeId, speed) {
         .text("0");
     await sleep(speed);
 
-    while (queue.size > 0) {
+    while (queue.size > 0 && isRunning) {
         let minNode = null;
         for (const node of queue) {
             if (minNode === null || distances[node] < distances[minNode]) {
@@ -233,13 +248,15 @@ async function dijkstraStepByStep(startNodeId, speed) {
             }
         }
     }
+    isRunning = false;
 }
 
 async function bfsStepByStep(startNodeId, speed) {
+    isRunning = true;
     const queue = [startNodeId];
     const visited = new Set([startNodeId]);
 
-    while (queue.length > 0) {
+    while (queue.length > 0 && isRunning) {
         const current = queue.shift();
 
         nodes.filter(d => d.id === current)
@@ -260,40 +277,111 @@ async function bfsStepByStep(startNodeId, speed) {
             }
         }
     }
+    isRunning = false;
 }
 
+let bridges = [];
+let articulationPoints = new Set();
+
 async function dfsStepByStep(startNodeId, speed) {
+    isRunning = true;
     const stack = [startNodeId];
     const visited = new Set([startNodeId]);
+    const disc = {};
+    const low = {};
+    const parent = {};
+    let time = 0;
 
-    while (stack.length > 0) {
-        const current = stack.pop();
 
-        nodes.filter(d => d.id === current)
-            .style("fill", "yellow");
+    graph.nodes.forEach(node => {
+        disc[node.id] = -1;
+        low[node.id] = -1;
+        parent[node.id] = null;
+    });
 
-        const neighbors = graph.edges.filter(edge => edge.source.id === current || edge.target.id === current);
+
+    async function dfs(u) {
+        if (!isRunning) return;
+
+
+        disc[u] = low[u] = ++time;
+
+
+        let children = 0;
+
+
+        const neighbors = graph.edges.filter(edge => edge.source.id === u || edge.target.id === u);
         for (const edge of neighbors) {
-            const neighbor = edge.source.id === current ? edge.target.id : edge.source.id;
-            if (!visited.has(neighbor)) {
-                visited.add(neighbor);
-                stack.push(neighbor);
+            const v = edge.source.id === u ? edge.target.id : edge.source.id;
+
+            if (disc[v] === -1) {
+                children++;
+                parent[v] = u;
+
 
                 edges.filter(d => d === edge)
                     .style("stroke", "cyan")
                     .style("stroke-width", 4);
 
+                nodes.filter(d => d.id === v)
+                    .style("fill", "yellow");
+
                 await sleep(speed);
+
+                await dfs(v);
+
+
+                low[u] = Math.min(low[u], low[v]);
+
+
+                if (parent[u] === null && children > 1) {
+                    articulationPoints.add(u);
+                }
+                if (parent[u] !== null && low[v] >= disc[u]) {
+                    articulationPoints.add(u);
+                }
+
+
+                if (low[v] > disc[u]) {
+                    bridges.push(edge);
+                }
+            } else if (v !== parent[u]) {
+                low[u] = Math.min(low[u], disc[v]);
             }
         }
     }
+
+
+    await dfs(startNodeId);
+
+
+    edges.filter(d => bridges.includes(d))
+        .attr("class", "edge bridge");
+    nodes.filter(d => bridges.includes(d))
+        .style("fill", "red");
+
+    nodes.filter(d => articulationPoints.has(d.id))
+        .attr("class", "node articulation-point");
+
+
+    const bridgeInfo = bridges.length > 0 ? `Aristas puente: ${bridges.map(e => `${e.source.id}-${e.target.id}`).join(", ")}` : "No hay aristas puente.";
+    const articulationInfo = articulationPoints.size > 0 ? `Puntos de articulación: ${Array.from(articulationPoints).join(", ")}` : "No hay puntos de articulación.";
+    algorithmInfo.textContent = `${bridgeInfo}. ${articulationInfo}.`;
+
+    isRunning = false;
 }
 
 function resetGraph() {
+    isRunning = false;
     edges.style("stroke", "#999")
-        .style("stroke-width", 2);
-    nodes.style("fill", "lightblue");
+        .style("stroke-width", 2)
+        .attr("class", "edge");
+    nodes.style("fill", "lightblue")
+        .attr("class", "node");
     svg.selectAll(".distance-label").remove();
+    simulation.stop();
+    bridges = [];
+    articulationPoints = new Set();
 }
 
 document.getElementById("start-button").addEventListener("click", () => {
@@ -314,7 +402,9 @@ document.getElementById("start-button").addEventListener("click", () => {
     }
 });
 
-document.getElementById("reset-button").addEventListener("click", resetGraph);
+document.getElementById("reset-button").addEventListener("click", () => {
+    resetGraph();
+});
 
 window.addEventListener("resize", () => {
     const newWidth = window.innerWidth;
@@ -333,8 +423,8 @@ graph.nodes.forEach(node => {
     startNodeSelect.appendChild(option);
 });
 
-
 const algorithmInfo = document.getElementById("algorithm-info");
+algorithmInfo.textContent = "Prim's Algorithm: Finds the minimum spanning tree for a weighted undirected graph.";
 document.getElementById("algorithm-select").addEventListener("change", () => {
     const algorithm = document.getElementById("algorithm-select").value;
     let info = "";
