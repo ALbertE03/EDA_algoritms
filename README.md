@@ -6,7 +6,7 @@ Este repositorio combina la potencia de **Python** para la implementación de al
 
 ## 🌟 Características Principales
 
-- **Algoritmos Implementados**:
+- **Algoritmos Implementados para las visualizaciones**:
   - 📊 **Prim's Algorithm**: Para encontrar el árbol de expansión mínima.
   - 🧩 **Kruskal's Algorithm**: Otra forma de encontrar el árbol de expansión mínima.
   - 🛤️ **Dijkstra's Algorithm**: Para encontrar el camino más corto desde un nodo inicial.
@@ -20,7 +20,6 @@ Este repositorio combina la potencia de **Python** para la implementación de al
 
 - **Diseño Moderno y Responsivo**:
   - 🎉 **Interfaz Atractiva**: Con un fondo animado y estilos modernos.
-  - 📱 **Compatible con Móviles**: Funciona perfectamente en dispositivos de pantalla pequeña.
 
 ---
 

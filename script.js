@@ -183,16 +183,36 @@ async function kruskalStepByStep(speed) {
 
     for (const edge of sortedEdges) {
         if (!isRunning) break;
+
+
+        edges.filter(d => d === edge)
+            .style("stroke", "red")
+            .style("stroke-width", 4);
+
+
+        nodes.filter(d => d.id === edge.source.id || d.id === edge.target.id)
+            .style("fill", "#4CAF50")
+            .style("stroke", "#388E3C");
+
+
+        await sleep(speed);
+
+
         if (union(edge.source.id, edge.target.id)) {
             mstEdges.push(edge);
+        } else {
 
             edges.filter(d => d === edge)
-                .style("stroke", "red")
-                .style("stroke-width", 4);
+                .style("stroke", "#a5b4fc")
+                .style("stroke-width", 3);
 
-            await sleep(speed);
+            nodes.filter(d => d.id === edge.source.id || d.id === edge.target.id)
+                .style("fill", "#6e8efb")
+                .style("stroke", "#4a6cf7");
         }
     }
+
+    // Restaurar el estado de ejecución
     isRunning = false;
 }
 
@@ -413,7 +433,235 @@ async function dfsStepByStep(startNodeId, speed) {
 
     isRunning = false;
 }
+async function bellmanFordStepByStep(startNodeId, speed) {
+    edgeLabels.style("display", "block");
+    isRunning = true;
+    const distances = {};
+    const previous = {};
+    graph.nodes.forEach(node => {
+        distances[node.id] = Infinity;
+        previous[node.id] = null;
+    });
+    distances[startNodeId] = 0;
 
+
+    const distanceLabels = svg.selectAll(".distance-label")
+        .data(graph.nodes)
+        .enter()
+        .append("text")
+        .attr("class", "distance-label")
+        .text(d => distances[d.id] === Infinity ? "∞" : distances[d.id])
+        .style("font-size", "20px")
+        .style("fill", "orange")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 15);
+
+    //relajar
+    for (let i = 0; i < graph.nodes.length - 1 && isRunning; i++) {
+        for (const edge of graph.edges) {
+            if (!isRunning) break;
+
+
+            const u = edge.source.id;
+            const v = edge.target.id;
+            const weight = edge.weight;
+
+
+            if (distances[u] !== Infinity && distances[u] + weight < distances[v]) {
+                distances[v] = distances[u] + weight;
+                previous[v] = u;
+
+
+                distanceLabels.filter(d => d.id === v)
+                    .text(distances[v]);
+
+
+                edges.filter(d => d === edge)
+                    .style("stroke", "red")
+                    .style("stroke-width", 4);
+
+                nodes.filter(d => d.id === v)
+                    .style("fill", "orange");
+
+                await sleep(speed);
+            }
+
+            // Relajar de v a u
+            if (distances[v] !== Infinity && distances[v] + weight < distances[u]) {
+                distances[u] = distances[v] + weight;
+                previous[u] = v;
+
+
+                distanceLabels.filter(d => d.id === u)
+                    .text(distances[u]);
+
+
+                edges.filter(d => d === edge)
+                    .style("stroke", "red")
+                    .style("stroke-width", 4);
+
+                nodes.filter(d => d.id === u)
+                    .style("fill", "orange");
+
+                await sleep(speed);
+            }
+        }
+    }
+
+    // Verificar ciclos negativos
+    for (const edge of graph.edges) {
+        const u = edge.source.id;
+        const v = edge.target.id;
+        const weight = edge.weight;
+
+        if (distances[u] !== Infinity && distances[u] + weight < distances[v]) {
+            algorithmInfo.innerHTML = "⚠️ <strong>Ciclo negativo detectado!</strong>";
+            isRunning = false;
+            return;
+        }
+        if (distances[v] !== Infinity && distances[v] + weight < distances[u]) {
+            algorithmInfo.innerHTML = "⚠️ <strong>Ciclo negativo detectado!</strong>";
+            isRunning = false;
+            return;
+        }
+    }
+
+    algorithmInfo.innerHTML = "✅ <strong>Bellman-Ford completado!</strong>";
+    isRunning = false;
+}
+async function detectAndHighlightCycles(speed, startN) {
+    edgeLabels.style("display", "none");
+    isRunning = true;
+
+    const cycles = new Set();
+    const normalizedCycles = new Set();
+
+    async function dfs(nodeId, path, parentId) {
+        if (!isRunning) return;
+
+        if (path.includes(nodeId)) {
+            const cycle = path.slice(path.indexOf(nodeId)).concat(nodeId);
+            const normalizedCycle = normalizeCycle(cycle);
+
+            if (!normalizedCycles.has(normalizedCycle)) {
+                normalizedCycles.add(normalizedCycle);
+                cycles.add(cycle.join("-"));
+
+
+                await highlightCycle(cycle, speed);
+
+
+                await resetCycle(cycle);
+            }
+            return;
+        }
+
+        nodes.filter(d => d.id === nodeId)
+            .style("fill", "yellow");
+
+        await sleep(speed);
+
+
+        const neighbors = graph.edges
+            .filter(edge => edge.source.id === nodeId || edge.target.id === nodeId)
+            .map(edge => edge.source.id === nodeId ? edge.target.id : edge.source.id);
+
+
+        for (const neighbor of neighbors) {
+            if (neighbor !== parentId) {
+                await dfs(neighbor, [...path, nodeId], nodeId);
+            }
+        }
+
+
+        nodes.filter(d => d.id === nodeId)
+            .style("fill", "lightblue");
+    }
+
+    function normalizeCycle(cycle) {
+        const sortedCycle = [...cycle].sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0));
+        return sortedCycle.join("-");
+    }
+
+    async function highlightCycle(cycle, speed) {
+
+        for (let i = 0; i < cycle.length - 1; i++) {
+            const u = cycle[i];
+            const v = cycle[i + 1];
+            const edge = graph.edges.find(e =>
+                (e.source.id === u && e.target.id === v) ||
+                (e.source.id === v && e.target.id === u)
+            );
+            edges.filter(d => d === edge)
+                .style("stroke", "red")
+                .style("stroke-width", 4);
+        }
+
+
+        cycle.forEach(nodeId => {
+            nodes.filter(d => d.id === nodeId)
+                .style("fill", "orange");
+        });
+
+        await sleep(speed * 2);
+    }
+
+
+    async function resetCycle(cycle) {
+        for (let i = 0; i < cycle.length - 1; i++) {
+            const u = cycle[i];
+            const v = cycle[i + 1];
+            const edge = graph.edges.find(e =>
+                (e.source.id === u && e.target.id === v) ||
+                (e.source.id === v && e.target.id === u)
+            );
+            edges.filter(d => d === edge)
+                .style("stroke", "black")
+                .style("stroke-width", 2);
+        }
+
+        cycle.forEach(nodeId => {
+            nodes.filter(d => d.id === nodeId)
+                .style("fill", "lightblue");
+        });
+
+        await sleep(speed);
+    }
+
+
+    await dfs(startN, [], null);
+
+    if (cycles.size > 0) {
+        let cyclesText = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #d9534f; margin-bottom: 5px;">🔴 <strong>Ciclos detectados:</strong></h2>
+            <div class="cycles-grid">
+    `;
+
+        let index = 1;
+        cycles.forEach((cycle) => {
+            cyclesText += `
+            <div class="cycle-item">
+                ${cycle}
+            </div>
+        `;
+            index++;
+        });
+
+        cyclesText += `
+            </div>
+        </div>
+    `;
+        algorithmInfo.innerHTML = cyclesText;
+    } else {
+        algorithmInfo.innerHTML = `
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #5cb85c;">✅ <strong>No se detectaron ciclos.</strong></h2>
+        </div>
+    `;
+    }
+    isRunning = false;
+}
 function resetGraph() {
     isRunning = false;
     edges.style("stroke", "#999")
@@ -432,6 +680,7 @@ document.getElementById("start-button").addEventListener("click", () => {
     const startNodeId = document.getElementById("start-node-select").value;
     const speed = parseInt(document.getElementById("speed-slider").value);
     resetGraph();
+
     if (algorithm === "prim") {
         primStepByStep(startNodeId, speed);
     } else if (algorithm === "kruskal") {
@@ -442,6 +691,10 @@ document.getElementById("start-button").addEventListener("click", () => {
         bfsStepByStep(startNodeId, speed);
     } else if (algorithm === "dfs") {
         dfsStepByStep(startNodeId, speed);
+    } else if (algorithm === "bellman-ford") {
+        bellmanFordStepByStep(startNodeId, speed);
+    } else if (algorithm === "detect-cycles") {
+        detectAndHighlightCycles(speed, startNodeId);
     }
 });
 
@@ -469,7 +722,6 @@ graph.nodes.forEach(node => {
 
 const algorithmInfo = document.getElementById("algorithm-info");
 algorithmInfo.textContent = "Algoritmo de Prim: Encuentra el árbol de expansión mínima para un grafo no dirigido ponderado.";
-
 document.getElementById("algorithm-select").addEventListener("change", () => {
     const algorithm = document.getElementById("algorithm-select").value;
     let info = "";
@@ -483,6 +735,10 @@ document.getElementById("algorithm-select").addEventListener("change", () => {
         info = "Búsqueda en Anchura (BFS): Explora todos los nodos nivel por nivel desde un nodo inicial.";
     } else if (algorithm === "dfs") {
         info = "Búsqueda en Profundidad (DFS): Explora lo más lejos posible a lo largo de cada rama antes de retroceder.";
+    } else if (algorithm === "bellman-ford") {
+        info = "Algoritmo de Bellman-Ford: Encuentra el camino más corto desde un nodo inicial en un grafo dirigido con pesos negativos (sin ciclos negativos).";
+    } else if (algorithm === "detect-cycles") {
+        info = "Detección de ciclos: Detecta si un grafo dirigido contiene ciclos.";
     }
     algorithmInfo.textContent = info;
 });
