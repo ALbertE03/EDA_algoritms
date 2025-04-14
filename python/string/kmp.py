@@ -46,6 +46,6 @@ def kmp_search(text, pattern):
     return result
 
 
-text = "ABABDABACDEABABCABAB"
-pattern = "A"
+text = "asdasdaasdasdasdaasdasdad"
+pattern = "aaaa"
 print("Coincidencias encontradas en los índices:", kmp_search(text, pattern))
