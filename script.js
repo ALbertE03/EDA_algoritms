@@ -15,9 +15,9 @@ const graph = {
         { source: 'D', target: 'F', weight: 14 },
         { source: 'E', target: 'F', weight: 10 },
         { source: 'F', target: 'G', weight: 2 },
-        { source: 'G', target: 'H', weight: 1 },
+
         { source: 'G', target: 'I', weight: 6 },
-        { source: 'H', target: 'I', weight: 7 },
+
         { source: 'J', target: 'K', weight: 3 },
         { source: 'J', target: 'L', weight: 5 },
         { source: 'K', target: 'L', weight: 7 },
@@ -38,9 +38,9 @@ const svg = d3.select("#graph-container")
 function getForces(width, height) {
     const isSmallScreen = width < 768;
     return {
-        linkDistance: isSmallScreen ? 20 : 200,
+        linkDistance: isSmallScreen ? 20 : 100,
         collideRadius: isSmallScreen ? 40 : 100,
-        charge: isSmallScreen ? 20 : 500,
+        charge: isSmallScreen ? 20 : 300,
         centerForce: d3.forceCenter(width / 2, height / 2),
     };
 }
@@ -120,40 +120,97 @@ async function primStepByStep(startNodeId, speed) {
     bridges = []; // Limpiar aristas puente
     articulationPoints = new Set(); // Limpiar puntos de articulación
     isRunning = true;
-    const visited = new Set([startNodeId]);
+
+    // Conjunto para nodos visitados globalmente
+    const globalVisited = new Set();
     const mstEdges = [];
 
-    while (visited.size < graph.nodes.length && isRunning) {
-        let minEdge = null;
-        let minWeight = Infinity;
+    // Seguir ejecutando Prim para cada componente no visitado
+    while (globalVisited.size < graph.nodes.length && isRunning) {
+        // Si tenemos un nodo de inicio específico, usarlo para el primer componente
+        // Para los componentes restantes, tomar cualquier nodo no visitado
+        let currentStart;
+        if (globalVisited.size === 0) {
+            currentStart = startNodeId;
+        } else {
+            // Encontrar el primer nodo no visitado para el siguiente componente
+            currentStart = graph.nodes.find(node => !globalVisited.has(node.id))?.id;
+            if (!currentStart) break; // No hay más nodos para visitar
 
-        graph.edges.forEach(edge => {
-            if (
-                (visited.has(edge.source.id) && !visited.has(edge.target.id)) ||
-                (visited.has(edge.target.id) && !visited.has(edge.source.id))
-            ) {
-                if (edge.weight < minWeight) {
-                    minWeight = edge.weight;
-                    minEdge = edge;
-                }
-            }
-        });
-
-        if (minEdge) {
-            mstEdges.push(minEdge);
-            visited.add(minEdge.source.id);
-            visited.add(minEdge.target.id);
-
-            edges.filter(d => d === minEdge)
-                .style("stroke", "red")
-                .style("stroke-width", 4);
-
-            nodes.filter(d => d.id === minEdge.source.id || d.id === minEdge.target.id)
-                .style("fill", "orange");
-
+            // Mostrar mensaje de nuevo componente
+            algorithmInfo.innerHTML += `<p style="color: #f97316;">Iniciando nuevo componente desde el nodo ${currentStart}</p>`;
             await sleep(speed);
         }
+
+        // Visitar el nodo inicial del componente actual
+        globalVisited.add(currentStart);
+        const componentVisited = new Set([currentStart]);
+
+        // Resaltar nodo inicial de cada componente
+        nodes.filter(d => d.id === currentStart)
+            .transition().duration(200)
+            .style("fill", "#c084fc") // Púrpura para nodo inicial de componente
+            .style("stroke", "#7e22ce")
+            .style("stroke-width", 3);
+
+        await sleep(speed);
+
+        // Ejecutar Prim para el componente actual
+        let componentComplete = false;
+        while (!componentComplete && isRunning) {
+            let minEdge = null;
+            let minWeight = Infinity;
+
+            // Buscar la arista de menor peso que conecta un nodo visitado con uno no visitado
+            graph.edges.forEach(edge => {
+                if (
+                    (componentVisited.has(edge.source.id) && !componentVisited.has(edge.target.id)) ||
+                    (componentVisited.has(edge.target.id) && !componentVisited.has(edge.source.id))
+                ) {
+                    if (edge.weight < minWeight) {
+                        minWeight = edge.weight;
+                        minEdge = edge;
+                    }
+                }
+            });
+
+            if (minEdge) {
+                // Agregar la arista al MST
+                mstEdges.push(minEdge);
+
+                // Actualizar conjuntos de nodos visitados
+                const newNode = componentVisited.has(minEdge.source.id) ? minEdge.target.id : minEdge.source.id;
+                componentVisited.add(newNode);
+                globalVisited.add(newNode);
+
+                // Visualizar la arista y nodos
+                edges.filter(d => d === minEdge)
+                    .transition().duration(200)
+                    .style("stroke", "#10b981") // Verde para MST
+                    .style("stroke-width", 4)
+                    .style("opacity", 1);
+
+                nodes.filter(d => d.id === newNode)
+                    .transition().duration(200)
+                    .style("fill", "#f97316") // Naranja para nodos visitados
+                    .style("stroke", "#ea580c")
+                    .style("stroke-width", 2);
+
+                await sleep(speed);
+            } else {
+                // No se encontraron más aristas para el componente actual
+                componentComplete = true;
+            }
+        }
     }
+
+    // Verificar si todos los nodos fueron visitados
+    if (globalVisited.size < graph.nodes.length) {
+        algorithmInfo.innerHTML += `<p style="color: #ef4444;"><strong>Nota:</strong> El grafo no es completamente conexo. Se han encontrado ${mstEdges.length} aristas para un bosque de expansión mínima.</p>`;
+    } else {
+        algorithmInfo.innerHTML += `<p style="color: #10b981;"><strong>Éxito:</strong> Árbol de expansión mínima encontrado con ${mstEdges.length} aristas.</p>`;
+    }
+
     isRunning = false;
 }
 
@@ -162,11 +219,17 @@ async function kruskalStepByStep(speed) {
     bridges = [];
     articulationPoints = new Set();
     isRunning = true;
+
     const sortedEdges = graph.edges.slice().sort((a, b) => a.weight - b.weight);
     const parent = {};
     const mstEdges = [];
+    const componentCount = {}; // Para contar nodos por componente
 
-    graph.nodes.forEach(node => parent[node.id] = node.id);
+    // Inicializar cada nodo en su propio conjunto
+    graph.nodes.forEach(node => {
+        parent[node.id] = node.id;
+        componentCount[node.id] = 1; // Iniciar con un nodo por componente
+    });
 
     function find(u) {
         if (parent[u] !== u) parent[u] = find(parent[u]);
@@ -177,44 +240,106 @@ async function kruskalStepByStep(speed) {
         const rootU = find(u);
         const rootV = find(v);
         if (rootU !== rootV) {
-            parent[rootV] = rootU;
+            // El conjunto más pequeño se une al más grande (optimización)
+            if (componentCount[rootU] < componentCount[rootV]) {
+                parent[rootU] = rootV;
+                componentCount[rootV] += componentCount[rootU];
+            } else {
+                parent[rootV] = rootU;
+                componentCount[rootU] += componentCount[rootV];
+            }
             return true;
         }
         return false;
     }
 
+    // Color para diferentes componentes
+    const getComponentColor = (componentId) => {
+        const hue = (componentId.charCodeAt(0) * 20) % 360;
+        return `hsl(${hue}, 80%, 60%)`;
+    };
+
+    // Inicialmente colorear cada nodo como su propio componente
+    for (const node of graph.nodes) {
+        nodes.filter(d => d.id === node.id)
+            .transition().duration(300)
+            .style("fill", getComponentColor(node.id));
+
+        await sleep(speed / 4);
+    }
+
+    algorithmInfo.innerHTML = "<p>Ordenando aristas por peso...</p>";
+    await sleep(speed);
+
+    algorithmInfo.innerHTML += "<p>Construyendo bosque de expansión mínima...</p>";
+
+    let componentCount2 = graph.nodes.length; // Iniciar con N componentes
+
     for (const edge of sortedEdges) {
         if (!isRunning) break;
 
-
+        // Resaltar la arista actual que estamos considerando
         edges.filter(d => d === edge)
-            .style("stroke", "red")
-            .style("stroke-width", 4);
-
+            .transition().duration(200)
+            .style("stroke", "#f97316") // Naranja para arista considerada
+            .style("stroke-width", 4)
+            .style("opacity", 1);
 
         nodes.filter(d => d.id === edge.source.id || d.id === edge.target.id)
-            .style("fill", "#4CAF50")
-            .style("stroke", "#388E3C");
+            .transition().duration(200)
+            .style("stroke", "#000000")
+            .style("stroke-width", 3);
 
+        algorithmInfo.innerHTML += `<p>Evaluando arista ${edge.source.id}-${edge.target.id} con peso ${edge.weight}...</p>`;
 
         await sleep(speed);
 
-
+        // Verificar si agregar esta arista no creará un ciclo
         if (union(edge.source.id, edge.target.id)) {
             mstEdges.push(edge);
-        } else {
+            componentCount2--; // Reducir el número de componentes
 
+            // Actualizar la visualización para mostrar que la arista es parte del MST
             edges.filter(d => d === edge)
-                .style("stroke", "#a5b4fc")
-                .style("stroke-width", 3);
+                .transition().duration(200)
+                .style("stroke", "#10b981") // Verde para el MST
+                .style("stroke-width", 4)
+                .style("opacity", 1);
 
-            nodes.filter(d => d.id === edge.source.id || d.id === edge.target.id)
-                .style("fill", "#6e8efb")
-                .style("stroke", "#4a6cf7");
+            algorithmInfo.innerHTML += `<p style="color: #10b981;">✅ Arista ${edge.source.id}-${edge.target.id} añadida al MST</p>`;
+
+            // Actualizar color de todos los nodos en el mismo componente
+            const rootComponent = find(edge.source.id);
+            const componentColor = getComponentColor(rootComponent);
+
+            for (const node of graph.nodes) {
+                if (find(node.id) === rootComponent) {
+                    nodes.filter(d => d.id === node.id)
+                        .transition().duration(300)
+                        .style("fill", componentColor);
+                }
+            }
+        } else {
+            // La arista crearía un ciclo, resaltarlo brevemente y luego resetear
+            edges.filter(d => d === edge)
+                .transition().duration(200)
+                .style("stroke", "#ef4444") // Rojo para aristas rechazadas
+                .style("stroke-width", 2)
+                .style("opacity", 0.5);
+
+            algorithmInfo.innerHTML += `<p style="color: #ef4444;">❌ Arista ${edge.source.id}-${edge.target.id} rechazada (crearía ciclo)</p>`;
         }
+
+        await sleep(speed / 2);
     }
 
-    // Restaurar el estado de ejecución
+    // Verificar si se formó un solo árbol o un bosque
+    if (componentCount2 > 1) {
+        algorithmInfo.innerHTML += `<p style="color: #f97316;"><strong>Nota:</strong> El grafo no es conexo. Se ha formado un bosque de expansión mínima con ${componentCount2} componentes.</p>`;
+    } else {
+        algorithmInfo.innerHTML += `<p style="color: #10b981;"><strong>Éxito:</strong> Árbol de expansión mínima completo encontrado con ${mstEdges.length} aristas.</p>`;
+    }
+
     isRunning = false;
 }
 
