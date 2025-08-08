@@ -1,6 +1,7 @@
 ﻿using EDA.Core.MyList;
 using System;
 using EDA.Core.MyQueue;
+using EDA.Core.MyStack;
 
 
 namespace EDA
@@ -37,7 +38,9 @@ namespace EDA
             cola.Enqueue(42);
             cola.Enqueue(21);
             cola.Enqueue(432);
+            cola.Print(); //2 -> 4 -> 24 -> 42 -> 21 -> 432
             Console.WriteLine(cola.Peak()?.Value); // 2
+            Console.WriteLine(cola.Peak()?.Value);//6
             Console.WriteLine(cola.isEmpty()); // false
             Console.WriteLine(cola.Peak()?.Value);//2
             Console.WriteLine(cola.Dequeue()?.Value);//2
@@ -47,9 +50,10 @@ namespace EDA
             Console.WriteLine(cola.Dequeue()?.Value);//42
             Console.WriteLine(cola.Dequeue()?.Value);//21
             Console.WriteLine(cola.Dequeue()?.Value);//432
+            Console.WriteLine(cola.Size); // 0 
             try
             {
-                Console.WriteLine(cola.Dequeue()?.Value);//2
+                Console.WriteLine(cola.Dequeue()?.Value); // error
             }
             catch (Exception e)
             {
@@ -57,14 +61,27 @@ namespace EDA
             }
             Console.WriteLine(cola.isEmpty()); //true
            
+            Console.WriteLine();
 
+        }
+        public static void TestStack()
+        {
+            Console.WriteLine("Testing My Stack");
+            var pila = new MyStack<int>();
+            pila.Add(2);
+            pila.Add(22);
+            pila.Add(23);
+            pila.Print(); //[23,22,2]
+            Console.WriteLine(pila.pop().Value);//23
+            Console.WriteLine(pila.pop().Value);//22
         }
         static void Main(String[] args)
         {
             TestList();
             TestQueue();
-            
-    }
+            TestStack();
+
         }
+    }
         
 }

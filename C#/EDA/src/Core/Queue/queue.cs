@@ -62,6 +62,18 @@ public class MyQueue<T> : IMyQueue<T>
     }
     public void Print()
     {
-        
+        Node<T>? current = _head;
+        while (current != null)
+        {
+            Console.Write(current.Value);
+            if (current.Next != null)
+            {
+                Console.Write(" -> ");
+
+            }
+            current = current.Next;
+        }
+
+        Console.WriteLine();
     }
 }
