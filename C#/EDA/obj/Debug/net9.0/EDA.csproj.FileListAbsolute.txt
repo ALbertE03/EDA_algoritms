@@ -1,0 +1,15 @@
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/bin/Debug/net9.0/EDA
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/bin/Debug/net9.0/EDA.deps.json
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/bin/Debug/net9.0/EDA.runtimeconfig.json
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/bin/Debug/net9.0/EDA.dll
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/bin/Debug/net9.0/EDA.pdb
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.GeneratedMSBuildEditorConfig.editorconfig
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.AssemblyInfoInputs.cache
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.AssemblyInfo.cs
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.csproj.CoreCompileInputs.cache
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.sourcelink.json
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.dll
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/refint/EDA.dll
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.pdb
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/EDA.genruntimeconfig.cache
+/Users/alberto/Desktop/EDA_algoritms/C#/EDA/obj/Debug/net9.0/ref/EDA.dll

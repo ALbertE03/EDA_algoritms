@@ -56,5 +56,5 @@ print("Cola después de eliminar el primer elemento:", c)
 
 c.add(6)
 print("Cola después de añadir 6:", c)
-
+print("Elemento eliminado:", c.pop_left())
 print("Tamaño de la cola:", c.size)
