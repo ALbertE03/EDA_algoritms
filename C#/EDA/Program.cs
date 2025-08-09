@@ -3,7 +3,7 @@ using System;
 using EDA.Core.MyQueue;
 using EDA.Core.MyStack;
 using EDA.Core.AVL;
-
+using EDA.Core.DisJoinSet;
 namespace EDA
 {
     class Program
@@ -146,14 +146,59 @@ namespace EDA
            /    \
         Albert    Pepe 
             */
+            Console.WriteLine();
         }
-       
+
+        public static void TestDisJoinSet()
+        {
+            Console.WriteLine("Testing DisjointSet with integers:");
+            var ds = new DisJoinSet<int>();
+            
+            ds.merge(1, 0);
+            ds.merge(2, 0);
+            ds.merge(4, 3);
+            ds.merge(5, 3);
+            
+            Console.WriteLine($"Find(0): {ds.find(0)}"); // 0 (raíz del conjunto {0,1,2})
+            Console.WriteLine($"Find(1): {ds.find(1)}"); // 0 (mismo conjunto que 0)
+            Console.WriteLine($"Find(2): {ds.find(2)}"); // 0 (mismo conjunto que 0)
+            Console.WriteLine($"Find(3): {ds.find(3)}"); // 3 (raíz del conjunto {3,4,5})
+            Console.WriteLine($"Find(4): {ds.find(4)}"); // 3 (mismo conjunto que 3)
+            Console.WriteLine($"Find(22): {ds.find(22)}"); // 22 (nuevo conjunto {22})
+            
+            Console.WriteLine($"¿Están conectados 1 y 2? {ds.is_connected(1, 2)}"); // true
+            Console.WriteLine($"¿Están conectados 1 y 4? {ds.is_connected(1, 4)}"); // false
+            Console.WriteLine($"¿Están conectados 4 y 5? {ds.is_connected(4, 5)}"); // true
+            
+            ds.merge(1, 4);
+            Console.WriteLine($"Después de merge(1, 4):");
+            Console.WriteLine($"¿Están conectados 1 y 4? {ds.is_connected(1, 4)}"); // true
+            Console.WriteLine($"¿Están conectados 2 y 5? {ds.is_connected(2, 5)}"); // true
+            
+            // Test con número de conjuntos
+            Console.WriteLine($"Número de conjuntos: {ds.GetNumberOfSets()}"); // 2 ({0,1,2,3,4,5} y {22})
+            
+            Console.WriteLine("\nTesting DisjointSet with strings:");
+            var dsString = new DisJoinSet<string>();
+            dsString.merge("Alice", "Bob");
+            dsString.merge("Charlie", "David");
+            dsString.merge("Eve", "Frank");
+            dsString.merge("Bob", "Charlie");
+            
+            Console.WriteLine($"¿Están conectados Alice y David? {dsString.is_connected("Alice", "David")}"); // true
+            Console.WriteLine($"¿Están conectados Alice y Eve? {dsString.is_connected("Alice", "Eve")}"); // false
+            Console.WriteLine($"Número de conjuntos de strings: {dsString.GetNumberOfSets()}"); // 2
+            
+            Console.WriteLine($"Miembros del conjunto de Alice: [{string.Join(", ", dsString.GetSetMembers("Alice"))}]");
+            Console.WriteLine();
+        }
         static void Main(String[] args)
         {
-            TestList();
-            TestQueue();
-            TestStack();
-            TestAVL();
+            //TestList();
+            //TestQueue();
+            //TestStack();
+            //TestAVL();
+            TestDisJoinSet();
         }
     }
         
