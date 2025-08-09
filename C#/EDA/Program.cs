@@ -2,7 +2,7 @@
 using System;
 using EDA.Core.MyQueue;
 using EDA.Core.MyStack;
-
+using EDA.Core.AVL;
 
 namespace EDA
 {
@@ -74,13 +74,86 @@ namespace EDA
             pila.Print(); //[23,22,2]
             Console.WriteLine(pila.pop().Value);//23
             Console.WriteLine(pila.pop().Value);//22
+            Console.WriteLine();
         }
+
+        public static void TestAVL()
+        {
+            Console.WriteLine("Testing My AVL");
+            var avl = new AVL<int>();
+            avl.Add(2);
+            avl.Add(5);
+            avl.Add(6);
+            avl.Add(6);
+            avl.Add(6);
+            avl.Add(1);
+            avl.Add(0);
+            avl.Add(-1);
+            avl.Add(-2);
+            avl.Print();
+            /* 
+            salida
+            5
+          /  \
+        1     6 
+       / \   /   \
+    -1    2 6     6    
+    / \
+   -2  0
+            */
+            Console.WriteLine(avl.Search(1).Valor);//1
+            avl.Delete(1);
+            Console.WriteLine();
+            avl.Print();
+                        /* 
+                salida
+                5
+               /  \
+             -1     6 
+             / \   /  \
+           -2   0 6     6    
+           
+         
+                */
+            
+            
+            if(avl.Search(1)?.Valor==null){
+                 Console.WriteLine("null");//null
+            }else{
+                throw new Exception("No deberia estar aqui nunca");
+            }
+           
+
+            var avl2 = new AVL<string>();
+            avl2.Add("Hola");
+            avl2.Add("Pepe");
+            avl2.Add("Jose");
+            avl2.Add("Albert");
+            Console.WriteLine();
+            avl2.Print();
+            /*
+            Jose
+           /    \
+        Hola    Pepe
+        /
+      Albert  
+            */
+            avl2.Delete("Hola");
+            Console.WriteLine();
+            avl2.Print();
+               /*
+            Jose
+           /    \
+        Albert    Pepe 
+            */
+        }
+       
         static void Main(String[] args)
         {
             TestList();
             TestQueue();
             TestStack();
-
+            TestAVL();
         }
     }
         
